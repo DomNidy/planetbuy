@@ -18,9 +18,10 @@ export const userRouter = createTRPCRouter({
       });
 
       if (requestedPlanet) {
-        ctx.session.cart.planets.push(requestedPlanet);
+        console.log(requestedPlanet.id, " found");
       } else {
         throw new Error("Could not find requested planet id");
       }
     }),
 });
+
