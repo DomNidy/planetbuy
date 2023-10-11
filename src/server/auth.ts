@@ -52,6 +52,14 @@ export const authOptions: NextAuthOptions = {
     GitHubProvider({
       clientId: env.GITHUB_ID,
       clientSecret: env.GITHUB_SECRET,
+      authorization: {
+        params: {
+          redirect_uri:
+            env.NODE_ENV === "development"
+              ? "http://localhost:3000/api/auth/callback/github"
+              : "https://planetbuy.vercel.app/api/auth/callback/github",
+        },
+      },
     }),
     /**
      * ...add more providers here.

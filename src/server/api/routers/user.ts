@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
@@ -7,4 +8,19 @@ export const userRouter = createTRPCRouter({
       select: { balance: true },
     });
   }),
+  addPlanetToCart: protectedProcedure
+    .input(z.object({ planetID: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const requestedPlanet = await ctx.db.planet.findUnique({
+        where: {
+          id: input.planetID,
+        },
+      });
+
+      if (requestedPlanet) {
+        ctx.session.cart.planets.push(requestedPlanet);
+      } else {
+        throw new Error("Could not find requested planet id");
+      }
+    }),
 });

@@ -5,6 +5,7 @@ import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
 import { Poppins, Pixelify_Sans } from "next/font/google";
+import Navbar from "~/components/Navbar";
 
 export const pixelifySans = Pixelify_Sans({
   weight: ["400", "500", "600"],
@@ -22,7 +23,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <div className={poppins.className}>
+      <Navbar />
+      <div className={`${poppins.className}`}>
         <Component {...pageProps} />
       </div>
     </SessionProvider>

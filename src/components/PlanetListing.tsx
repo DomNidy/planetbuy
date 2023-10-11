@@ -1,4 +1,5 @@
 import { type User } from "@prisma/client";
+import { api } from "~/utils/api";
 
 type PlanetData = {
   User: { name: string | null };
@@ -9,6 +10,9 @@ type PlanetData = {
   discoveryDate: Date;
 };
 export default function PlanetListing(planetData: PlanetData) {
+  // TODO: Figure out how to send the query with planet id
+  const addToCart = api.user.addPlanetToCart.useMutation();
+
   return (
     <div className="w-fit rounded-lg bg-slate-700 p-8">
       <h2 className="font-semibold">
@@ -29,7 +33,10 @@ export default function PlanetListing(planetData: PlanetData) {
           {planetData.discoveryDate.toLocaleDateString()}
         </span>
       </h2>
-      <button className=" rounded-md bg-white p-2 hover:bg-slate-200">
+      <button
+        className=" rounded-md bg-white p-2 hover:bg-slate-200"
+        onClick={() => addToCart}
+      >
         Add to cart
       </button>
     </div>
