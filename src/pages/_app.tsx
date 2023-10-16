@@ -1,11 +1,14 @@
 import { type AppType } from "next/app";
-import { Session } from "next-auth";
+import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
 import { Poppins, Pixelify_Sans } from "next/font/google";
-import Navbar from "~/components/Navbar";
+import Navbar from "../components/Navbar";
+import ShoppingCartProvider from "../context/ShoppingCartContext";
+import React from "react";
+import { TailwindIndicator } from "~/components/TailwindIndicator";
 
 export const pixelifySans = Pixelify_Sans({
   weight: ["400", "500", "600"],
@@ -23,10 +26,13 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <Navbar />
-      <div className={`${poppins.className}`}>
-        <Component {...pageProps} />
-      </div>
+      <ShoppingCartProvider>
+        <Navbar />
+        <TailwindIndicator />
+        <div className={`${poppins.className}`}>
+          <Component {...pageProps} />
+        </div>
+      </ShoppingCartProvider>
     </SessionProvider>
   );
 };

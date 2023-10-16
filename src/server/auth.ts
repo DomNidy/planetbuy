@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { Planet } from "@prisma/client";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
@@ -6,6 +7,7 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
+import DiscordProvider from "next-auth/providers/discord";
 
 import { env } from "~/env.mjs";
 import { db } from "~/server/db";
@@ -61,6 +63,19 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
+    DiscordProvider({
+      clientId: env.DISCORD_ID,
+      clientSecret: env.DISCORD_SECRET,
+      authorization: {
+        params: {
+          redirect_uri:
+            env.NODE_ENV === "development"
+              ? "http://localhost:3000/api/auth/callback/discord"
+              : "https://planetbuy.vercel.app/api/auth/callback/discord",
+        },
+      },
+    }),
+
     /**
      * ...add more providers here.
      *

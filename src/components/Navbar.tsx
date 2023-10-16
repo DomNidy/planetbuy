@@ -1,68 +1,49 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+"use client";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { api } from "~/utils/api";
-import { HamburgerMenuIcon, Cross2Icon } from "@radix-ui/react-icons";
-import { useEffect, useRef, useState } from "react";
+import { api, getBaseUrl } from "~/utils/api";
+import { Cross2Icon, PersonIcon } from "@radix-ui/react-icons";
+import { useEffect, useRef, useState, useContext } from "react";
+import { ShoppingCartContext } from "~/context/ShoppingCartContext";
+import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import {
+  ClipboardList,
+  Container,
+  Gavel,
+  LogOut,
+  PackagePlus,
+  ShoppingBagIcon,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function Navbar() {
-  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
-  const session = useSession();
-
-  const docRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const resizeObserver = new ResizeObserver((e) => {
-      if (e[0] && e[0]?.target.clientWidth > 640) {
-        setDropdownOpen(false);
-      }
-    });
-
-    resizeObserver.observe(docRef.current as Element);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
-
-  if (dropdownOpen) {
-    return (
-      <div className="fixed top-0 flex w-full flex-row-reverse bg-slate-950 p-4 text-slate-50 sm:p-10">
-        <div
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="ml-auto  flex h-7 w-7 cursor-pointer items-center justify-center rounded-full p-1 hover:bg-white/30 sm:hidden "
-        >
-          <Cross2Icon width={25} height={25} />
-        </div>
-        <div className="flex flex-row ">
-          <AuthDisplay />
-        </div>
-      </div>
-    );
-  }
   return (
-    <div
-      className="fixed top-0 mb-auto flex w-full bg-slate-950 p-4 text-slate-50 sm:p-10"
-      ref={docRef}
-    >
-      <div className="flex grow flex-col gap-y-0.5">
-        <h1 className={`  text-2xl font-semibold -tracking-tight `}>
-          PlanetBuy
-        </h1>
-        <p className="hidden sm:block">The planet marketplace</p>
-      </div>
-
-      <div className="hidden flex-col items-center gap-2 sm:flex">
-        <AuthDisplay />
-      </div>
-      <div
-        onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full p-1 hover:bg-white/30 sm:hidden "
+    <div className="fixeds top-0 z-50  flex w-full justify-between  p-4 text-black shadow-md  sm:p-10 sm:px-32">
+      <Link
+        href={`${getBaseUrl()}/`}
+        className={` text-pl cursor-pointer text-3xl font-bold tracking-tighter text-pbprimary-500 `}
       >
-        <HamburgerMenuIcon width={25} height={25} />
+        PlanetBuy
+      </Link>
+
+      <div className=" flex flex-col items-center gap-2">
+        <AuthDisplay />
       </div>
     </div>
   );
 }
 function AuthDisplay() {
+  const router = useRouter();
+  const shoppingCart = useContext(ShoppingCartContext);
   const { data: sessionData } = useSession();
 
   const { data } = api.user.getBalance.useQuery(undefined, {
@@ -70,23 +51,90 @@ function AuthDisplay() {
   });
 
   return (
-    <div className="flex flex-col  items-start justify-center ">
-      <p className=" text-base text-slate-50">
-        {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-      </p>
-      <p className="text-base text-slate-50">
-        {sessionData && <span>Balance: ${data?.balance}</span>}
-      </p>
-      <p className="text-base text-slate-50">
-        {sessionData && <span>Cart (0)</span>}
+    <div className=" flex  flex-row items-center justify-center rounded-md text-black">
+      <p className="text-base ">
+        {sessionData && (
+          <div className="mr-4 flex items-center rounded-full bg-pbprimary-700 p-2 text-slate-50 transition hover:bg-pbprimary-500">
+            <ShoppingBagIcon className="mr-2 h-4 w-4"></ShoppingBagIcon>
+            <span
+              className="cursor-pointer"
+              onClick={() => router.push(`${getBaseUrl()}/checkout`)}
+            >
+              Cart {`(${shoppingCart.cart?.length ?? 0})`}
+            </span>
+          </div>
+        )}
       </p>
 
-      <button
-        className="mt-1 rounded-lg bg-white/10 px-4 py-2 font-semibold text-slate-50 no-underline transition hover:bg-white/20"
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
-      >
-        {sessionData ? "Sign out" : "Sign in"}
-      </button>
+      {sessionData ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={`flex h-9 
+                w-9 items-center justify-center  rounded-full 
+              bg-pbprimary-700 font-semibold text-black no-underline transition hover:bg-pbprimary-500`}
+            >
+              <PersonIcon className="h-5 w-5 rounded-full text-slate-50"></PersonIcon>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="mr-2 w-fit rounded-lg border-pbneutral-500 bg-white p-2 text-lg text-pbtext-700">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+
+            <DropdownMenuGroup>
+              <DropdownMenuItem>
+                <Link
+                  href={`${getBaseUrl()}/profile/${sessionData.user.id}`}
+                  className="flex"
+                >
+                  <PersonIcon className="mr-2 h-4 w-4"></PersonIcon>
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Container className="mr-2 h-4 w-4" />
+                <span>Your Planets</span>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuLabel>Marketplace</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem>
+                <Link className="flex" href={`${getBaseUrl()}/create-listing`}>
+                  <Gavel className="mr-2 h-4 w-4" />
+                  <span>Create a Listing</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link
+                  href={`${getBaseUrl()}/profile/${
+                    sessionData.user.id
+                  }/listings`}
+                  className="flex"
+                >
+                  <ClipboardList className="mr-2 h-4 w-4" />
+                  <span>Your Listings</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <div className="flex" onClick={() => void signOut()}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <button
+          className={`rounded-lg bg-pbprimary-700 px-4
+          py-2 font-semibold text-slate-50 no-underline transition hover:bg-pbprimary-500`}
+          onClick={() => void signIn()}
+        >
+          Sign in
+        </button>
+      )}
     </div>
   );
 }

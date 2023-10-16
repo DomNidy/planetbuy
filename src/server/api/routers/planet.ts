@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { z } from "zod";
 
 export const planetRouter = createTRPCRouter({
@@ -14,34 +17,43 @@ export const planetRouter = createTRPCRouter({
       return await ctx.db.planet.findMany({
         take: limit + 1,
         cursor: cursor ? { id: cursor.id } : undefined,
-        orderBy: [{ postedDate: "desc" }],
+        orderBy: [{ discoveryDate: "desc" }],
         select: {
           discoveryDate: true,
-          listPrice: true,
-          postedDate: true,
-          User: {
-            select: {
-              name: true,
-            },
-          },
+          id: true,
+          owner: { select: { name: true } },
           surfaceArea: true,
           name: true,
         },
       });
     }),
-  createPlanetListing: publicProcedure
+  getAllPurchasablePlanets: publicProcedure
     .input(
       z.object({
-        name: z.string(),
-        listPrice: z.number().min(100),
-        surfaceArea: z.number().min(100),
+        limit: z.number().optional(),
+        cursor: z.object({ id: z.string() }).optional(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      return ctx.db.planet.create({
-        data: {
-          ...input,
+    .query(async ({ input: { limit = 10, cursor }, ctx }) => {
+      const purchasables = await ctx.db.listing.findMany({
+        take: limit + 1,
+        cursor: cursor ? { id: cursor.id } : undefined,
+
+        select: {
+          listPrice: true,
+          planet: {
+            select: {
+              discoveryDate: true,
+              id: true,
+              name: true,
+              owner: true,
+              surfaceArea: true,
+              listing: { select: { listDate: true, id: true } },
+            },
+          },
         },
       });
+
+      return purchasables;
     }),
 });

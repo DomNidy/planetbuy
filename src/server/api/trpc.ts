@@ -11,9 +11,10 @@ import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
-
+import { type CartItem } from "@prisma/client";
 import { db } from "~/server/db";
 import { getServerAuthSession } from "../auth";
+import { api } from "~/utils/api";
 
 /**
  * 1. CONTEXT
@@ -55,7 +56,9 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   // Get the session from the server using getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
 
-  return createInnerTRPCContext({ session });
+  return createInnerTRPCContext({
+    session,
+  });
 };
 
 /**
