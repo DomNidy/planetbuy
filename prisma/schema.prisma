@@ -41,13 +41,14 @@ model CartItem {
 
     // Reference to the listing 
     listing   Listing @relation(fields: [listingId], references: [planetId], onDelete: Cascade)
-    listingId String  @unique
+    listingId String
 
     // Referencing the user (this signifies this CartItem belongs to the user)
     User   User   @relation(fields: [userId], references: [id])
     userId String
 
     @@index([userId])
+    @@index([listingId])
 }
 
 model User {
@@ -59,7 +60,6 @@ model User {
     balance       Float      @default(500000)
     accounts      Account[]
     sessions      Session[]
-    // The planets the user has
     planets       Planet[]
     cartItems     CartItem[]
 }

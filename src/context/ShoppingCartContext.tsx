@@ -6,6 +6,7 @@ import { RouterOutputs, api } from "~/utils/api";
 type CartCTX = {
   cart?: RouterOutputs["user"]["getCartItems"];
   addItemToCart: (itemId: string) => void;
+  itemCount: number;
 };
 
 export const ShoppingCartContext = createContext<CartCTX>({
@@ -13,6 +14,7 @@ export const ShoppingCartContext = createContext<CartCTX>({
     return;
   },
   cart: [],
+  itemCount: 0,
 });
 
 // I want to use this to persist the shopping cart state across multiple page routes
@@ -27,17 +29,39 @@ export default function ShoppingCartProvider({
   // Cart item state is retrieved from api
   const cartItemsQuery = api.user.getCartItems.useQuery(undefined, {});
 
-  const addItemMutation = api.user.addItemToCart.useMutation();
+  const addItemMutation = api.user.addItemToCart.useMutation({
+    onMutate: () => {
+      // As soon as we send out the request, increment the cart item count
+      setCartItemCount((past) => past + 1);
+    },
+    onError: () => {
+      // If the request fails, decrement the cart item count
+      setCartItemCount((past) => past - 1);
+    },
+  });
 
+  // Stores the amount of items in cart, if the query has no data, return 0
+  const [cartItemCount, setCartItemCount] = useState<number>(
+    cartItemsQuery ? cartItemsQuery.data?.length ?? 0 : 0,
+  );
+
+  // This function is made available outside the context
   const addItemToCart = (itemId: string) =>
     addItemMutation.mutate({ itemId: itemId });
+
+  // Whenever the data from our query changes, update the cart item count accordingly
+  useEffect(() => {
+    if (cartItemsQuery.data) {
+      setCartItemCount(cartItemsQuery.data.length);
+    }
+  }, [cartItemsQuery.data]);
 
   return (
     <ShoppingCartContext.Provider
       value={{
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         cart: cartItemsQuery.data ? cartItemsQuery.data : [],
-
+        itemCount: cartItemCount,
         addItemToCart: addItemToCart,
       }}
     >

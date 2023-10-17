@@ -1,5 +1,5 @@
 import { api } from "~/utils/api";
-import PlanetListing from "~/components/PlanetListing";
+import PlanetCard from "~/components/PlanetCard";
 
 export default function Home() {
   const allPlanets = api.planet.getAllPurchasablePlanets.useQuery({
@@ -8,19 +8,16 @@ export default function Home() {
 
   return (
     <>
-      <main className="flex min-h-screen flex-row items-center justify-center gap-4  ">
-        <div className="grid grid-cols-4 items-stretch gap-4 p-8">
+      <main className="flex min-h-screen flex-row justify-center gap-4  ">
+        <div className="grid w-full  grid-cols-1 items-stretch gap-4 p-8 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
           {" "}
           {allPlanets.data ? (
             allPlanets.data.map((planetData, idx) => (
-              <PlanetListing
-                id={planetData.id}
-                listPrice={planetData.listPrice}
+              <PlanetCard
+                variant="listing"
                 planet={planetData.planet}
-                planetId={planetData.planetId}
-                seller={planetData.seller}
-                sellerUserId={planetData.sellerUserId}
-                key={planetData.id}
+                listPrice={planetData.listPrice}
+                key={planetData.planet.id}
               />
             ))
           ) : (

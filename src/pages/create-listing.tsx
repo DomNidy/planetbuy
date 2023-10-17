@@ -1,6 +1,6 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import { RouterInputs, api } from "~/utils/api";
+import { api } from "~/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -23,7 +23,7 @@ import {
 import { Calendar } from "~/components/ui/calendar";
 import { cn } from "~/utils/utils";
 
-// This schema is defined in the input for `api.user.createPlanetListing`
+// This schema is defined in the input for `api.user.createPlanetCard`
 // Whenever that gets updated, copy and paste the zod schema into here
 const formSchema = z.object({
   name: z
@@ -62,7 +62,7 @@ const formSchema = z.object({
 });
 
 export default function CreateListingPage() {
-  const createListing = api.user.createPlanetListing.useMutation();
+  const createListing = api.user.createPlanetCard.useMutation();
 
   // Destructuring react hook form
   const form = useForm<z.infer<typeof formSchema>>({

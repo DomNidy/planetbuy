@@ -50,9 +50,13 @@ function AuthDisplay() {
     enabled: sessionData?.user !== undefined,
   });
 
+  useEffect(() => {
+    console.log("re");
+  }, [shoppingCart.itemCount]);
+
   return (
     <div className=" flex  flex-row items-center justify-center rounded-md text-black">
-      <p className="text-base ">
+      <div className="text-base ">
         {sessionData && (
           <div className="mr-4 flex items-center rounded-full bg-pbprimary-700 p-2 text-slate-50 transition hover:bg-pbprimary-500">
             <ShoppingBagIcon className="mr-2 h-4 w-4"></ShoppingBagIcon>
@@ -60,11 +64,11 @@ function AuthDisplay() {
               className="cursor-pointer"
               onClick={() => router.push(`${getBaseUrl()}/checkout`)}
             >
-              Cart {`(${shoppingCart.cart?.length ?? 0})`}
+              Cart {`(${shoppingCart.itemCount ?? 0})`}
             </span>
           </div>
         )}
-      </p>
+      </div>
 
       {sessionData ? (
         <DropdownMenu>

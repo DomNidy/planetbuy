@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import PlanetListing from "~/components/PlanetListing";
 import { api, getBaseUrl } from "~/utils/api";
 
 export default function ListingsPage() {
@@ -70,7 +69,7 @@ export default function ListingsPage() {
                 </h2>
               </div>
 
-              <h3 className="text-pbtext-500 text-[18px] tracking-tighter">
+              <h3 className="text-[18px] tracking-tighter text-pbtext-500">
                 105 million square km
               </h3>
               <h3 className="mt-0.5 text-[18px] tracking-tighter text-pbtext-700">

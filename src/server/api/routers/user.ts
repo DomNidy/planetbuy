@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { db } from "~/server/db";
 
 export const userRouter = createTRPCRouter({
   getBalance: protectedProcedure.query(({ ctx }) => {
@@ -14,26 +11,26 @@ export const userRouter = createTRPCRouter({
     });
   }),
   checkoutCart: protectedProcedure
-    .input(z.object({ planetIDS: z.array(z.string()) }))
+    .input(z.object({ listingIDS: z.array(z.string()) }))
     .mutation(async ({ input, ctx }) => {
       // Object which maps each planet ID to the list price of the planet
-      const listPriceMap: Record<string, number> = {};
       let cartTotal = 0;
 
-      // Find the purchasable item which cooresponds to the planet id
+      // Find cart items for user
       // Calculate price of all items
-      for (const planetID of input.planetIDS) {
-        const requestedPlanet = await ctx.db.cartItem.findUniqueOrThrow({
-          where: {
-            listingId: planetID,
-            userId: ctx.session.user.id,
-          },
-          select: { listing: { select: { listPrice: true } } },
-        });
+      const requestedPlanet = await ctx.db.user.findUniqueOrThrow({
+        where: {
+          id: ctx.session.user.id,
+        },
+        select: {
+          cartItems: { include: { listing: { select: { listPrice: true } } } },
+        },
+      });
 
-        cartTotal += requestedPlanet.listing.listPrice;
-        listPriceMap[planetID] = requestedPlanet.listing.listPrice;
-      }
+      // increment the cart total by the value of all items in the users cart
+      requestedPlanet.cartItems.forEach((item) => {
+        cartTotal += item.listing.listPrice;
+      });
 
       // Get the user in order to check their balance
       const user = await ctx.db.user.findUnique({
@@ -55,22 +52,28 @@ export const userRouter = createTRPCRouter({
         });
       }
 
-      // If the user attempts to purchase a planet owned by them already, throw an error
-
       // Decrement users balance by cart total
-
       // Update the owner of each planet in the cart to be owned by the user
-      for (const planetID of input.planetIDS) {
-        // Update the owner of the purchased planet to the user who bought it
-        await ctx.db.planet.update({
-          where: { id: planetID },
-          data: { ownerId: user?.id },
-        });
-
+      for (const listingID of input.listingIDS) {
         // Decrement the buyers balance
         await ctx.db.user.update({
           where: { id: ctx.session.user.id },
-          data: { balance: { decrement: listPriceMap[planetID] } },
+          data: { balance: { decrement: cartTotal } },
+        });
+
+        // Update the purchased planets owner to reference the user who purchased it
+        await ctx.db.listing.update({
+          where: { id: listingID },
+          data: {
+            planet: {
+              update: { owner: { connect: { id: ctx.session.user.id } } },
+            },
+          },
+        });
+
+        // Delete the planet listing
+        await ctx.db.listing.delete({
+          where: { id: listingID },
         });
       }
 
@@ -81,7 +84,10 @@ export const userRouter = createTRPCRouter({
       where: { id: ctx.session.user.id },
       select: {
         cartItems: {
-          select: { listing: { select: { listPrice: true, planet: true } } },
+          select: {
+            id: true,
+            listing: { select: { listPrice: true, planet: true, id: true } },
+          },
         },
       },
     });
@@ -118,6 +124,17 @@ export const userRouter = createTRPCRouter({
         },
       });
     }),
+  removeItemFromCart: protectedProcedure
+    .input(z.object({ cartItemId: z.string() }))
+    .mutation(async ({ input: { cartItemId }, ctx }) => {
+      // Delete the cart item with the cooresponding listingId and userId
+      await ctx.db.cartItem.delete({
+        where: {
+          id: cartItemId,
+          AND: { userId: ctx.session.user.id },
+        },
+      });
+    }),
   getUserProfile: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -126,7 +143,7 @@ export const userRouter = createTRPCRouter({
         select: { name: true, planets: true, image: true },
       });
     }),
-  createPlanetListing: protectedProcedure
+  createPlanetCard: protectedProcedure
     .input(
       z.object({
         name: z
