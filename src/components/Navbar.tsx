@@ -24,6 +24,7 @@ import {
   ShoppingBagIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { Button } from "./ui/button";
 
 export default function Navbar() {
   return (
@@ -58,14 +59,12 @@ function AuthDisplay() {
     <div className=" flex  flex-row items-center justify-center rounded-md text-black">
       <div className="text-base ">
         {sessionData && (
-          <div className="mr-4 flex items-center rounded-full bg-pbprimary-700 p-2 text-slate-50 transition hover:bg-pbprimary-500">
+          <div
+            className="mr-4 flex cursor-pointer items-center rounded-full bg-pbprimary-500 p-2 text-slate-50 transition "
+            onClick={() => router.push(`${getBaseUrl()}/checkout`)}
+          >
             <ShoppingBagIcon className="mr-2 h-4 w-4"></ShoppingBagIcon>
-            <span
-              className="cursor-pointer"
-              onClick={() => router.push(`${getBaseUrl()}/checkout`)}
-            >
-              Cart {`(${shoppingCart.itemCount ?? 0})`}
-            </span>
+            <span>Cart {`(${shoppingCart.itemCount ?? 0})`}</span>
           </div>
         )}
       </div>
@@ -73,38 +72,46 @@ function AuthDisplay() {
       {sessionData ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
+            <Button
               className={`flex h-9 
                 w-9 items-center justify-center  rounded-full 
-              bg-pbprimary-700 font-semibold text-black no-underline transition hover:bg-pbprimary-500`}
+              p-0 font-semibold text-black no-underline transition`}
             >
               <PersonIcon className="h-5 w-5 rounded-full text-slate-50"></PersonIcon>
-            </button>
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="mr-2 w-fit rounded-lg border-pbneutral-500 bg-white p-2 text-lg text-pbtext-700">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="">
                 <Link
                   href={`${getBaseUrl()}/profile/${sessionData.user.id}`}
-                  className="flex"
+                  className="flex w-full"
                 >
                   <PersonIcon className="mr-2 h-4 w-4"></PersonIcon>
                   <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Container className="mr-2 h-4 w-4" />
-                <span>Your Planets</span>
+                <Link
+                  href={`${getBaseUrl()}/profile/${sessionData.user.id}`}
+                  className="flex w-full"
+                >
+                  <Container className="mr-2 h-4 w-4" />
+                  <span>Your Planets</span>
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuLabel>Marketplace</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Link className="flex" href={`${getBaseUrl()}/create-listing`}>
+                <Link
+                  className="flex w-full"
+                  href={`${getBaseUrl()}/create-listing`}
+                >
                   <Gavel className="mr-2 h-4 w-4" />
                   <span>Create a Listing</span>
                 </Link>
@@ -114,7 +121,7 @@ function AuthDisplay() {
                   href={`${getBaseUrl()}/profile/${
                     sessionData.user.id
                   }/listings`}
-                  className="flex"
+                  className="flex w-full"
                 >
                   <ClipboardList className="mr-2 h-4 w-4" />
                   <span>Your Listings</span>

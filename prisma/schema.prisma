@@ -11,11 +11,41 @@ datasource db {
     relationMode = "prisma"
 }
 
+enum PlanetQuality {
+    COMMON
+    UNIQUE
+    RARE
+    OUTSTANDING
+    PHENOMENAL
+}
+
+enum PlanetTemperatureRange {
+    EXTREME_COLD
+    COLD
+    TEMPERATE
+    WARM
+    HOT
+    EXTREME_HOT
+}
+
+enum PlanetTerrain {
+    MOUNTAINS
+    DESERTS
+    OCEANS
+    FORESTS
+    PLAINS
+    OTHER
+}
+
 model Planet {
     id            String   @id @unique @default(cuid())
     name          String   @unique
     discoveryDate DateTime @default(now())
     surfaceArea   Float
+
+    quality     PlanetQuality          @default(COMMON)
+    temperature PlanetTemperatureRange @default(TEMPERATE)
+    terrain     PlanetTerrain          @default(DESERTS)
 
     owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
     ownerId String?

@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
  * @param {any} num:number|string
  * @returns {any}
  */
-export function formatNumberWithCommas(num: number | string): string {
+export function formatNumberToStringWithCommas(num: number | string): string {
   // Convert input to a string in case it's a number
   const inputString = typeof num === "number" ? num.toString() : num;
   let formattedString = "";
@@ -36,6 +36,25 @@ export function formatNumberWithCommas(num: number | string): string {
 }
 
 /**
+ * Given a string with numbers in it, example: "300,454", converts the string to a number: 300454
+ *
+ * Will remove all commas in the string
+ *
+ * @param {any} stringWithNumbers:string
+ * @returns {any}
+ */
+export function formatStringToNumber(stringWithNumbers: string): number {
+  const formattedString: string = stringWithNumbers.replaceAll(",", "");
+  const convertedString = Number(formattedString);
+
+  if (Number.isNaN(convertedString)) {
+    throw new Error("Invalid string input");
+  }
+
+  return Number(formattedString);
+}
+
+/**
  * Utility function that converts large numbers into more readable strings
  *
  * Ex: 40050000 -> `40.1 million`
@@ -43,6 +62,13 @@ export function formatNumberWithCommas(num: number | string): string {
  * @returns {any}
  */
 export function formatLargeNumberToString(num: number) {
+  // Convert input to num
+  let convertedToNumber = Number(num);
+
+  if (isNaN(convertedToNumber) || typeof convertedToNumber != "number") {
+    return "";
+  }
+
   const magnitudes = [
     "",
     "thousand",
@@ -50,13 +76,34 @@ export function formatLargeNumberToString(num: number) {
     "billion",
     "trillion",
     "quadrillion",
+    "quintillion",
+    "sextillion",
+    "septillion",
+    "octillion",
+    "nonillion",
+    "decillion",
+    "undecillion",
+    "duodecillion",
+    "tredecillion",
+    "quattuordecillion",
+    "quindecillion",
+    "sexdecillion",
+    "septendecillion",
+    "octodecillion",
+    "novemdecillion",
+    "vigintillion",
+    "centillion",
   ];
 
   let magnitudeIndex = 0;
-  while (num >= 1000 && magnitudeIndex < magnitudes.length) {
-    num /= 1000;
+  while (convertedToNumber >= 1000 && magnitudeIndex < magnitudes.length-1) {
+    convertedToNumber /= 1000;
     magnitudeIndex++;
   }
 
-  return num.toFixed(1) + " " + magnitudes[magnitudeIndex];
+  if (magnitudeIndex == 0) {
+    return "";
+  }
+
+  return convertedToNumber.toFixed(1) + " " + magnitudes[magnitudeIndex];
 }

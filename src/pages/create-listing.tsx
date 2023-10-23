@@ -21,7 +21,7 @@ import {
   PopoverContent,
 } from "~/components/ui/popover";
 import { Calendar } from "~/components/ui/calendar";
-import { cn } from "~/utils/utils";
+import { cn, formatLargeNumberToString } from "~/utils/utils";
 
 // This schema is defined in the input for `api.user.createPlanetCard`
 // Whenever that gets updated, copy and paste the zod schema into here
@@ -35,14 +35,14 @@ const formSchema = z.object({
     .min(100, "Listing price must be at least 100")
     .max(
       100_000_000_000_000,
-      "Listing price cannot exceed 100,000,000,000,000",
+      "Listing price cannot exceed 100,000,000,000,000 (100 trillion)",
     ),
   surfaceArea: z.coerce
     .number()
     .min(1, "Surface must be greater than 1 square km.")
     .max(
       100_000_000_000_000,
-      "Maximum surface area size cannot exceed 100,000,000,000,000 square km.",
+      "Maximum surface area size cannot exceed 100,000,000,000,000 (100 trillion) square km.",
     ),
   discoveryDate: z.coerce.date().refine(
     (date) => {
@@ -117,6 +117,7 @@ export default function CreateListingPage() {
                   value={undefined}
                 ></Input>
               </FormControl>
+              <p className="text-sm font-bold ordinal text-muted-foreground">{formatLargeNumberToString(field.value)}</p>
               <FormMessage />
             </FormItem>
           )}
@@ -134,12 +135,12 @@ export default function CreateListingPage() {
               </FormDescription>
               <FormControl>
                 <Input
-                  type="number"
                   placeholder="2,000,000"
                   {...field}
                   value={undefined}
                 ></Input>
               </FormControl>
+              <p className="text-sm font-bold ordinal text-muted-foreground">{formatLargeNumberToString(field.value)}</p>
               <FormMessage />
             </FormItem>
           )}

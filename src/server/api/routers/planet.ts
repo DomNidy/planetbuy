@@ -44,6 +44,9 @@ export const planetRouter = createTRPCRouter({
               name: true,
               owner: true,
               surfaceArea: true,
+              quality: true,
+              temperature: true,
+              terrain: true,
               listing: { select: { listDate: true, id: true } },
             },
           },
@@ -51,5 +54,19 @@ export const planetRouter = createTRPCRouter({
       });
 
       return purchasables;
+    }),
+  getPlanetFromListingId: publicProcedure
+    .input(
+      z.object({
+        listingId: z.string(),
+      }),
+    )
+    .query(async ({ input: { listingId }, ctx }) => {
+      const listing = await ctx.db.listing.findUnique({
+        where: { id: listingId },
+        include: { planet: true },
+      });
+
+      return listing;
     }),
 });
