@@ -1,7 +1,5 @@
-import { type Planet } from "@prisma/client";
-import { UseTRPCQueryResult } from "@trpc/react-query/shared";
 import { createContext, useEffect, useState } from "react";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 
 type CartCTX = {
   cart?: RouterOutputs["user"]["getCartItems"];

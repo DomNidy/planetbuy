@@ -96,7 +96,7 @@ export function formatLargeNumberToString(num: number) {
   ];
 
   let magnitudeIndex = 0;
-  while (convertedToNumber >= 1000 && magnitudeIndex < magnitudes.length-1) {
+  while (convertedToNumber >= 1000 && magnitudeIndex < magnitudes.length - 1) {
     convertedToNumber /= 1000;
     magnitudeIndex++;
   }
@@ -106,4 +106,20 @@ export function formatLargeNumberToString(num: number) {
   }
 
   return convertedToNumber.toFixed(1) + " " + magnitudes[magnitudeIndex];
+}
+
+export function generateRandomNumberWithStdDev(
+  mean: number,
+  stdDeviation: number,
+): number {
+  // Generate two random numbers between 0 and 1 and apply the Box-Muller transform
+  const u1 = Math.random();
+  const u2 = Math.random();
+
+  const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+
+  // Scale and shift random number to match mean and std dev
+  const randomValue = mean + stdDeviation * z0;
+
+  return Math.abs(randomValue);
 }

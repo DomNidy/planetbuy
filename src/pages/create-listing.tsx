@@ -117,7 +117,9 @@ export default function CreateListingPage() {
                   value={undefined}
                 ></Input>
               </FormControl>
-              <p className="text-sm font-bold ordinal text-muted-foreground">{formatLargeNumberToString(field.value)}</p>
+              <p className="text-sm font-bold ordinal text-muted-foreground">
+                {formatLargeNumberToString(field.value)}
+              </p>
               <FormMessage />
             </FormItem>
           )}
@@ -140,7 +142,9 @@ export default function CreateListingPage() {
                   value={undefined}
                 ></Input>
               </FormControl>
-              <p className="text-sm font-bold ordinal text-muted-foreground">{formatLargeNumberToString(field.value)}</p>
+              <p className="text-sm font-bold ordinal text-muted-foreground">
+                {formatLargeNumberToString(field.value)}
+              </p>
               <FormMessage />
             </FormItem>
           )}
@@ -190,6 +194,7 @@ export default function CreateListingPage() {
         />
         <Button type="submit">Create listing</Button>
       </form>
+
     </Form>
   );
 }

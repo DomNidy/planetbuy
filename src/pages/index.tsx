@@ -3,7 +3,7 @@ import PlanetCard from "~/components/PlanetCard";
 
 export default function Home() {
   const allPlanets = api.planet.getAllPurchasablePlanets.useQuery({
-    limit: 5,
+    limit: 60,
   });
 
   return (
@@ -12,7 +12,7 @@ export default function Home() {
         <div className="grid w-full  grid-cols-1 items-stretch gap-4 p-8 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
           {" "}
           {allPlanets.data ? (
-            allPlanets.data.map((planetData, idx) => (
+            allPlanets.data.map((planetData) => (
               <PlanetCard
                 variant="listing"
                 planet={planetData.planet}

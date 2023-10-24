@@ -31,7 +31,11 @@ export const env = createEnv({
       process.env.VERCEL ? z.string() : z.string().url()
     ),
     DISCORD_SECRET: z.string(),
-    DISCORD_ID: z.string()
+    DISCORD_ID: z.string(),
+    MIN_LISTING_PRICE: z.number(),
+    MAX_LISTING_PRICE: z.number(),
+    MIN_SURFACE_AREA: z.number(),
+    MAX_SURFACE_AREA: z.number()
   },
 
   /**
@@ -55,7 +59,18 @@ export const env = createEnv({
     GITHUB_SECRET: process.env.GITHUB_SECRET,
     GITHUB_ID: process.env.GITHUB_ID,
     DISCORD_ID: process.env.DISCORD_ID,
-    DISCORD_SECRET: process.env.DISCORD_SECRET
+    DISCORD_SECRET: process.env.DISCORD_SECRET,
+
+    // Store configuration
+
+    // Minimum price an item can be listed for
+    MIN_LISTING_PRICE: process.env.MIN_LISTING_PRICE ? parseFloat(process.env.MIN_LISTING_PRICE.replace(/_/g, '')) : 100,
+    // Maximum price an item can be listing for
+    MAX_LISTING_PRICE: process.env.MAX_LISTING_PRICE ? parseFloat(process.env.MAX_LISTING_PRICE.replace(/_/g, '')) : 100_000_000_000_000,
+    // Minimum surface area of a planet
+    MIN_SURFACE_AREA: process.env.MIN_SURFACE_AREA ? parseFloat(process.env.MIN_SURFACE_AREA.replace(/_/g, '')) : 1,
+    // Maximum surface area of a planet
+    MAX_SURFACE_AREA: process.env.MAX_SURFACE_AREA ? parseFloat(process.env.MAX_SURFACE_AREA.replace(/_/g, '')) : 100_000_000_000_000
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
