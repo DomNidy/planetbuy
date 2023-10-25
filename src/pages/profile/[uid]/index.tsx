@@ -1,8 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/router";
-import { api, getBaseUrl } from "~/utils/api";
-
+import PlanetCard from "~/components/PlanetCard";
+import { api } from "~/utils/api";
 
 export default function ListingsPage() {
   const router = useRouter();
@@ -50,39 +49,20 @@ export default function ListingsPage() {
         <div className="mt-16 flex h-full flex-col rounded-lg border border-border p-4">
           <h2 className="text-2xl font-semibold text-pbtext-700">
             {userProfile.data.name}
-            {"'s"} listings:
+            {"'s"} planets:
           </h2>
           <div className="mt-2 grid h-full  w-full grid-cols-1 gap-8 overflow-x-scroll md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  2xl:grid-cols-5">
             {/** Planet listing element here */}
-            <Link
-              href={`${getBaseUrl()}/listing/LISTING-ID-HERE`}
-              className="cursor-pointer"
-            >
-              {/** Planet image here */}
-              <div className="mb-4 aspect-square rounded-2xl bg-pbneutral-500" />
-              <div className="flex w-full justify-between">
-                {" "}
-                <h2 className="text-[22px] font-semibold leading-6 tracking-tighter text-pbtext-700">
-                  Planet Name Here
-                </h2>
-                <h2 className="text-[22px] font-semibold leading-6 tracking-tighter text-blue-600">
-                  Rare
-                </h2>
-              </div>
 
-              <h3 className="text-[18px] tracking-tighter text-pbtext-500">
-                105 million square km
-              </h3>
-              <h3 className="mt-0.5 text-[18px] tracking-tighter text-pbtext-700">
-                $15,000
-              </h3>
-            </Link>
-
-            <div className="aspect-square rounded-2xl bg-pbneutral-500"></div>
-            <div className="aspect-square rounded-2xl bg-pbneutral-500"></div>
-            <div className="aspect-square rounded-2xl bg-pbneutral-500"></div>
-            <div className="aspect-square rounded-2xl bg-pbneutral-500"></div>
-            <div className="aspect-square rounded-2xl bg-pbneutral-500"></div>
+            {userProfile.data.planets.map((planet) => (
+              <PlanetCard
+                variant="showcase"
+                planetData={{
+                  planet: { ...planet, listing: null, owner: null },
+                }}
+                key={planet.id}
+              />
+            ))}
           </div>
         </div>
       </div>

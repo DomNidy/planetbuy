@@ -1,5 +1,7 @@
 import { useRouter } from "next/router";
+import { useContext } from "react";
 import { Button } from "~/components/ui/button";
+import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { api } from "~/utils/api";
 import {
   formatLargeNumberToString,
@@ -8,6 +10,7 @@ import {
 
 export default function ListingPage() {
   const router = useRouter();
+  const shoppingCart = useContext(ShoppingCartContext);
 
   const listingData = api.planet.getPlanetFromListingId.useQuery({
     listingId: router.query.listingId as string,
@@ -23,7 +26,7 @@ export default function ListingPage() {
 
   return (
     <div className="mb-4 mt-4 flex min-h-screen w-full justify-center px-4 sm:mt-36 sm:px-6 md:px-16 lg:px-44">
-      <div className="flex h-fit w-full sm:w-fit  flex-col  rounded-lg border-2 border-border p-4">
+      <div className="flex h-fit  w-fit  flex-col  rounded-lg border-2 border-border p-4">
         <div className="flex  flex-col gap-4  sm:flex-row">
           {/** Planet image here */}
           <div
@@ -32,7 +35,7 @@ export default function ListingPage() {
           ></div>
 
           <div className="flex flex-col">
-            <div className="flex w-full flex-row justify-start gap-2  w-[17rem] md:w-80">
+            <div className="flex w-[17rem] flex-row  justify-start gap-2 md:w-80">
               <h2 className="basis-5/12 text-[18px]  font-medium leading-6 tracking-tighter   text-pbtext-700">
                 Quality:
               </h2>
@@ -65,7 +68,7 @@ export default function ListingPage() {
               </h2>
             </div>
 
-            <div className="flex flex-row justify-start gap-2 w-[17rem] md:w-80">
+            <div className="flex w-[17rem] flex-row justify-start gap-2 md:w-80">
               <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter   text-pbtext-700">
                 Terrain:
               </h2>
@@ -100,7 +103,7 @@ export default function ListingPage() {
               </h2>
             </div>
 
-            <div className="flex flex-row justify-start gap-2  w-[17rem] md:w-80">
+            <div className="flex w-[17rem] flex-row justify-start  gap-2 md:w-80">
               <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter   text-pbtext-700">
                 Temperature:
               </h2>
@@ -144,17 +147,17 @@ export default function ListingPage() {
               </h2>
             </div>
 
-            <div className="flex flex-row justify-start gap-2  w-[17rem] md:w-80">
+            <div className="flex w-[17rem] flex-row justify-start  gap-2 md:w-80">
               <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter   text-pbtext-700">
                 Surface Area:
               </h2>
-              <h2 className="text-[20px] tracking-tighter leading-6 ">
+              <h2 className="text-[20px] leading-6 tracking-tighter ">
                 {formatLargeNumberToString(listingData.data.planet.surfaceArea)}
                 <sup>2</sup> km
               </h2>
             </div>
 
-            <div className="flex flex-row justify-start gap-2  w-[17rem] md:w-80">
+            <div className="flex w-[17rem] flex-row justify-start  gap-2 md:w-80">
               <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter   text-pbtext-700">
                 List Price:
               </h2>
@@ -169,7 +172,16 @@ export default function ListingPage() {
             {listingData.data.planet.name}
           </h1>
         </div>
-        <Button className="mt-2 w-fit">Add to cart</Button>
+        <Button
+          className="mt-2 w-fit"
+          onClick={() => {
+            if (listingData.data?.id) {
+              shoppingCart.addItemToCart(listingData.data?.id);
+            }
+          }}
+        >
+          Add to cart
+        </Button>
       </div>
     </div>
   );

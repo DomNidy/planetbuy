@@ -1,5 +1,4 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { Planet } from "@prisma/client";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,

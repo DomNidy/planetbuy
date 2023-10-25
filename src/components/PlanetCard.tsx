@@ -8,11 +8,16 @@ import {
   formatNumberToStringWithCommas,
 } from "~/utils/utils";
 
-export default function PlanetCard(
-  planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"][number] & {
-    variant: "listing" | "showcase";
-  },
-) {
+export default function PlanetCard({
+  planetData,
+  variant,
+}: {
+  planetData: Partial<
+    RouterOutputs["planet"]["getAllPurchasablePlanets"][number]
+  > &
+    Partial<RouterOutputs["user"]["getUserProfile"]["planets"][number]>;
+  variant: "listing" | "showcase";
+}) {
   const shoppingCart = useContext(ShoppingCartContext);
 
   return (
@@ -22,11 +27,11 @@ export default function PlanetCard(
         className=" relative mb-4  aspect-square
        rounded-2xl bg-pbneutral-500"
       >
-        {planetData.variant === "listing" ? (
+        {variant === "listing" ? (
           <ShoppingBagIcon
             onClick={() => {
               // Add item to card if the listing assosciated with this planet has an id
-              if (planetData.planet.listing?.id) {
+              if (planetData.planet?.listing?.id) {
                 shoppingCart.addItemToCart(planetData.planet.listing?.id);
               }
             }}
@@ -39,39 +44,47 @@ export default function PlanetCard(
           <></>
         )}
       </div>
-      <Link href={`${getBaseUrl()}/listing/${planetData.planet.listing?.id}`}>
+      <Link
+        href={`${
+          variant === "listing"
+            ? `${getBaseUrl()}/listing/${planetData.planet?.listing?.id}`
+            : `${getBaseUrl()}/planet/${planetData.planet?.id}`
+        } `}
+      >
         <div className="flex w-full  justify-between">
           <h2 className="text-[22px] font-semibold leading-6 tracking-tighter text-pbtext-700 ">
-            {planetData.planet.name}
+            {planetData.planet?.name}
           </h2>
           <h2
             className={`text-[22px] font-semibold leading-6 tracking-tighter 
-            ${planetData.planet.quality === "COMMON" ? "text-gray-500" : ""}
-            ${planetData.planet.quality === "UNIQUE" ? "text-green-600" : ""}
-            ${planetData.planet.quality === "RARE" ? "text-blue-600" : ""}
+            ${planetData.planet?.quality === "COMMON" ? "text-gray-500" : ""}
+            ${planetData.planet?.quality === "UNIQUE" ? "text-green-600" : ""}
+            ${planetData.planet?.quality === "RARE" ? "text-blue-600" : ""}
             ${
-              planetData.planet.quality === "OUTSTANDING"
+              planetData.planet?.quality === "OUTSTANDING"
                 ? "text-purple-600"
                 : ""
             }
             ${
-              planetData.planet.quality === "PHENOMENAL"
+              planetData.planet?.quality === "PHENOMENAL"
                 ? "text-orange-600"
                 : ""
             }
             `}
           >
-            {planetData.planet.quality}
+            {planetData.planet?.quality}
           </h2>
         </div>
 
         <h3 className="text-[18px] tracking-tighter text-pbtext-500">
-          {formatLargeNumberToString(planetData.planet.surfaceArea)}
+          {formatLargeNumberToString(planetData.planet?.surfaceArea ?? 0)}
           <sup>2</sup> km
         </h3>
-        <h3 className="mt-0.5 text-[18px] tracking-tighter text-pbtext-700">
-          ${formatNumberToStringWithCommas(planetData.listPrice)}
-        </h3>
+        {variant === "listing" ?? (
+          <h3 className="mt-0.5 text-[18px] tracking-tighter text-pbtext-700">
+            ${formatNumberToStringWithCommas(planetData.listPrice ?? 0)}
+          </h3>
+        )}
       </Link>
     </div>
   );

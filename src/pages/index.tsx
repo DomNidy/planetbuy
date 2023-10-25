@@ -14,9 +14,8 @@ export default function Home() {
           {allPlanets.data ? (
             allPlanets.data.map((planetData) => (
               <PlanetCard
+                planetData={planetData}
                 variant="listing"
-                planet={planetData.planet}
-                listPrice={planetData.listPrice}
                 key={planetData.planet.id}
               />
             ))

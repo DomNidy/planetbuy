@@ -77,6 +77,8 @@ model CartItem {
     User   User   @relation(fields: [userId], references: [id])
     userId String
 
+    // Enforces that a user cannot add the same listing to their cart multiple times
+    @@unique([userId, listingId])
     @@index([userId])
     @@index([listingId])
 }

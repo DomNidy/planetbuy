@@ -1,7 +1,6 @@
 import { env } from "~/env.mjs";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
-import { setTimeout } from "timers/promises";
 import { generateRandomNumberWithStdDev } from "~/utils/utils";
 
 export const planetRouter = createTRPCRouter({

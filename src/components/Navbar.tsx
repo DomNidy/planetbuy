@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { formatNumberToStringWithCommas } from "~/utils/utils";
 
 export default function Navbar() {
   return (
@@ -47,24 +48,31 @@ function AuthDisplay() {
   const shoppingCart = useContext(ShoppingCartContext);
   const { data: sessionData } = useSession();
 
-  const { data } = api.user.getBalance.useQuery(undefined, {
+  const userBalance = api.user.getBalance.useQuery(undefined, {
     enabled: sessionData?.user !== undefined,
   });
-
-  useEffect(() => {
-    console.log("re");
-  }, [shoppingCart.itemCount]);
 
   return (
     <div className=" flex  flex-row items-center justify-center rounded-md text-black">
       <div className="text-base ">
         {sessionData && (
-          <div
-            className="mr-4 flex cursor-pointer items-center rounded-full bg-pbprimary-500 p-2 text-slate-50 transition "
-            onClick={() => router.push(`${getBaseUrl()}/checkout`)}
-          >
-            <ShoppingBagIcon className="mr-2 h-4 w-4"></ShoppingBagIcon>
-            <span>Cart {`(${shoppingCart.itemCount ?? 0})`}</span>
+          <div className="flex flex-row gap-2">
+            <div className="mr-4 hidden items-center gap-1 rounded-full bg-pbprimary-500 p-2 font-medium text-slate-50 transition sm:flex ">
+              Balance:{" "}
+              <span className="font-semibold ">
+                $
+                {formatNumberToStringWithCommas(
+                  userBalance?.data?.balance ?? 0,
+                )}
+              </span>
+            </div>
+            <div
+              className="mr-4 flex cursor-pointer items-center rounded-full bg-pbprimary-500 p-2 text-slate-50 transition "
+              onClick={() => router.push(`${getBaseUrl()}/checkout`)}
+            >
+              <ShoppingBagIcon className="mr-2 h-4 w-4"></ShoppingBagIcon>
+              <span>Cart {`(${shoppingCart.itemCount ?? 0})`}</span>
+            </div>
           </div>
         )}
       </div>

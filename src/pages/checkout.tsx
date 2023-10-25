@@ -6,7 +6,6 @@ import { api } from "~/utils/api";
 export default function Checkout() {
   const shoppingCart = useContext(ShoppingCartContext);
   const checkoutCart = api.user.checkoutCart.useMutation();
-  const removeItemFromCart = api.user.removeItemFromCart.useMutation();
 
   return (
     <main className="mt-8 flex min-h-screen flex-col items-center gap-4 ">
@@ -36,7 +35,7 @@ export default function Checkout() {
             <Button
               variant={"destructive"}
               onClick={() =>
-                removeItemFromCart.mutate({ cartItemId: cartItem.id })
+                shoppingCart.removeItemFromCart(cartItem.id)
               }
             >
               Remove from cart
