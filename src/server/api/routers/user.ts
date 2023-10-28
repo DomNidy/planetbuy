@@ -147,6 +147,7 @@ export const userRouter = createTRPCRouter({
         });
       }
     }),
+  // itemId: Is the listing id of the item to remove from the users' cart
   removeItemFromCart: protectedProcedure
     .input(z.object({ itemId: z.string() }))
     .mutation(async ({ input: { itemId }, ctx }) => {

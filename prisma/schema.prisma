@@ -70,7 +70,7 @@ model CartItem {
     id String @id @default(cuid())
 
     // Reference to the listing 
-    listing   Listing @relation(fields: [listingId], references: [planetId], onDelete: Cascade)
+    listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
     listingId String
 
     // Referencing the user (this signifies this CartItem belongs to the user)

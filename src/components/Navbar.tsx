@@ -2,8 +2,8 @@
 "use client";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { api, getBaseUrl } from "~/utils/api";
-import { Cross2Icon, PersonIcon } from "@radix-ui/react-icons";
-import { useEffect, useRef, useState, useContext } from "react";
+import { PersonIcon } from "@radix-ui/react-icons";
+import { useContext } from "react";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { useRouter } from "next/navigation";
 import {
@@ -20,7 +20,6 @@ import {
   Container,
   Gavel,
   LogOut,
-  PackagePlus,
   ShoppingBagIcon,
 } from "lucide-react";
 import Link from "next/link";

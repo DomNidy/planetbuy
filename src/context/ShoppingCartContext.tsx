@@ -6,10 +6,14 @@ type CartCTX = {
   cart?: RouterOutputs["user"]["getCartItems"];
   addItemToCart: (itemId: string) => void;
   removeItemFromCart: (itemId: string) => void;
+  isItemInCart: (itemId: string) => boolean;
   itemCount: number;
 };
 
 export const ShoppingCartContext = createContext<CartCTX>({
+  isItemInCart() {
+    throw Error("Not implemented");
+  },
   addItemToCart() {
     throw Error("Not implemented");
   },
@@ -105,6 +109,20 @@ export default function ShoppingCartProvider({
     });
   };
 
+  // Returns true if an item is present in our shopping cart
+  // Returns false if the item is not present
+  function isItemInCart(itemId: string): boolean {
+    if (!cartItemsQuery.data) return false;
+
+    for (const item of cartItemsQuery.data) {
+      if (item.listing.id === itemId) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   // Whenever the cartItemsQuery data from the server changes
   // Update the cart item count, and update the localCart data
   useEffect(() => {
@@ -121,6 +139,7 @@ export default function ShoppingCartProvider({
         itemCount: cartItemCount,
         addItemToCart: addItemToCart,
         removeItemFromCart: removeItemFromCart,
+        isItemInCart: isItemInCart,
       }}
     >
       {children}

@@ -1,6 +1,13 @@
-import { ShoppingBagIcon } from "lucide-react";
+import {
+  Cross,
+  ShoppingBagIcon,
+  ShoppingBasket,
+  ShoppingCart,
+  ShoppingCartIcon,
+  X,
+} from "lucide-react";
 import Link from "next/link";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { getBaseUrl, type RouterOutputs } from "~/utils/api";
 import {
@@ -19,6 +26,15 @@ export default function PlanetCard({
   variant: "listing" | "showcase";
 }) {
   const shoppingCart = useContext(ShoppingCartContext);
+  const [isInCart, setIsInCart] = useState<boolean>(
+    shoppingCart.isItemInCart(planetData.planet?.listing?.id ?? ""),
+  );
+
+  useEffect(() => {
+    setIsInCart(
+      shoppingCart.isItemInCart(planetData.planet?.listing?.id ?? ""),
+    );
+  }, [planetData.planet?.listing?.id, shoppingCart, shoppingCart.cart]);
 
   return (
     <div>
@@ -27,18 +43,34 @@ export default function PlanetCard({
         className=" relative mb-4  aspect-square
        rounded-2xl bg-pbneutral-500"
       >
-        {variant === "listing" ? (
-          <ShoppingBagIcon
+        {isInCart && (
+          <X
+            className="absolute right-1 top-1  cursor-pointer rounded-full bg-pbneutral-400 p-1 transition-transform duration-75 hover:scale-110 hover:bg-red-500"
+            width={32}
+            height={32}
+            onClick={() => {
+              if (planetData.id) {
+                shoppingCart.removeItemFromCart(planetData.id);
+                setIsInCart(false);
+              }
+            }}
+          />
+        )}
+        {variant === "listing" && !isInCart ? (
+          <ShoppingCartIcon
+            color="#494949"
             onClick={() => {
               // Add item to card if the listing assosciated with this planet has an id
               if (planetData.planet?.listing?.id) {
                 shoppingCart.addItemToCart(planetData.planet.listing?.id);
+                setIsInCart(true);
               }
             }}
-            className="absolute right-1 top-1 cursor-pointer invert"
+            className={`absolute 
+             right-1 top-1 cursor-pointer transition-transform duration-75 hover:scale-110 `}
             width={32}
             height={32}
-            fill="rgba(255,255,255,0.6)"
+            fill="rgba(255,255,255,0.3)"
           />
         ) : (
           <></>
