@@ -15,7 +15,7 @@ export default function Checkout() {
           Object.values(shoppingCart.cart).map((cartItem) => (
             <div
               className="rounded-md bg-pbprimary-100 p-2 shadow-md"
-              key={cartItem.listing.planet.name}
+              key={cartItem.listing.planet.id}
             >
               <h2 className="font-semibold">
                 Planet:{" "}
@@ -35,10 +35,18 @@ export default function Checkout() {
                   {cartItem.listing.planet.ownerId}
                 </span>
               </h2>
+              <h2 className="font-semibold">
+                Planet ID:{" "}
+                <span className="font-medium">
+                  {cartItem.listing.planet.id}
+                </span>
+              </h2>
               <Button
                 variant={"destructive"}
                 onClick={() =>
-                  shoppingCart.removeItemFromCart(cartItem.listing.id)
+                  shoppingCart.removeItemFromCart(cartItem.listing.id, () => {
+                    return;
+                  })
                 }
               >
                 Remove from cart

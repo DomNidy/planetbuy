@@ -1,13 +1,18 @@
-import { createContext, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { type SetStateAction, createContext, useEffect, useState } from "react";
 import { useToast } from "~/components/ui/use-toast";
 import { type RouterOutputs, api } from "~/utils/api";
 
 type CartCTX = {
-  cart?: Record<string, RouterOutputs["user"]["getCartItems"][number]>;
+  cart?: RouterOutputs["user"]["getCartItems"];
   addItemToCart: (
     planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"][number],
+    setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
   ) => void;
-  removeItemFromCart: (itemId: string) => void;
+  removeItemFromCart: (
+    itemId: string,
+    setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
+  ) => void;
   isItemInCart: (itemId: string) => boolean;
 };
 
@@ -21,7 +26,7 @@ export const ShoppingCartContext = createContext<CartCTX>({
   removeItemFromCart() {
     throw Error("Not implemented");
   },
-  cart: {},
+  cart: [],
 });
 
 // I want to use this to persist the shopping cart state across multiple page routes
@@ -36,93 +41,97 @@ export default function ShoppingCartProvider({
   // Shadcn toaster component used to display error messages received from backend
   const { toast } = useToast();
 
+  const queryClient = useQueryClient();
+
   // Cart item state is retrieved from api
   const cartItemsQuery = api.user.getCartItems.useQuery(undefined, {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
 
-  // We use this local state as it gives us an easier time dealing with optimistic cart item removals
-  // * localCart is keyed with listing ids
-  const [localCart, setLocalCart] = useState<
-    Record<string, RouterOutputs["user"]["getCartItems"][number]> | undefined
-  >();
-
   const addItemMutation = api.user.addItemToCart.useMutation({
     // As soon as we send out the request, increment the cart item count (optimistic update)
-    onMutate: (item) => {
-      // Add a temporary item to local cart for optimistic update
-      setLocalCart((past) => {
-        return {
-          ...(past
-            ? {
-                ...past,
-                [item.listingId]: {
-                  id: "Loading...",
-                  listing: {
-                    id: item.listingId,
-                    listPrice: 0,
-                    planet: {
-                      discoveryDate: new Date(),
-                      id: "Loading...",
-                      name: "Loading...",
-                      ownerId: "Loading...",
-                      quality: "COMMON",
-                      surfaceArea: 0,
-                      temperature: "COLD",
-                      terrain: "DESERTS",
-                    },
-                  },
-                },
-              }
-            : {}),
-        };
-      });
-    },
-    onError: (error, itemAdded) => {
-      // If the request fails, decrement the cart item count
+    onMutate: async (item) => {
+      // Cancel outgoing refetches so they dont overwrite our optimistic update
+      await queryClient.cancelQueries([
+        ["user", "getCartItems"],
+        { type: "query" },
+      ]);
 
-      // Create a copy of the cart state and delete the itemId that was added during optimistic update
-      const updatedMap = { ...localCart };
-      delete updatedMap[itemAdded.listingId];
-      setLocalCart(updatedMap);
+      // Create a copy of the previous cart state before updating it optimistically
+      const previousCart: RouterOutputs["user"]["getCartItems"] | undefined =
+        queryClient.getQueryData([["user", "getCartItems"], { type: "query" }]);
 
-      toast({
-        title: "Failed to add item to cart",
-        description: `${error.message}`,
-        variant: "destructive",
-      });
+      queryClient.setQueryData([["user", "getCartItems"], { type: "query" }], [
+        {
+          id: `LOADING${item.listingId}`,
+          listing: { id: item.listingId, listPrice: 0, planet: {} },
+        },
+        ...(previousCart ?? []),
+      ] as RouterOutputs["user"]["getCartItems"]);
+      return { previousCart, item };
     },
-    onSettled: () => {
-      // Refetch cartItems data from the server
-      void cartItemsQuery.refetch();
+    onError: (error, itemAdded, context) => {
+      // Roll back cart to previous state on error
+      queryClient.setQueryData(
+        [["user", "getCartItems"], { type: "query" }],
+        context?.previousCart,
+      );
+    },
+    onSettled: async () => {
+      // Refetch data after settled
+      return await queryClient.invalidateQueries([
+        ["user", "getCartItems"],
+        { type: "query" },
+      ]);
     },
   });
 
   const removeItemMutation = api.user.removeItemFromCart.useMutation({
     // As soon as we send out request, decriment cart item count (optimistic update)
-    onMutate: ({ listingId }) => {
-      // Create a copy of the cart state and delete the listingId from it
-      const updatedMap = { ...localCart };
-      delete updatedMap[listingId];
-      setLocalCart(updatedMap);
+    onMutate: async ({ listingId }) => {
+      await queryClient.cancelQueries([
+        ["user", "getCartItems"],
+        { type: "query" },
+      ]);
+
+      // Create a copy of the previous cart state before updating it optimistically
+      const previousCart: RouterOutputs["user"]["getCartItems"] | undefined =
+        queryClient.getQueryData([["user", "getCartItems"], { type: "query" }]);
+
+      // Update query data to exclude the removed item (for optimistic update)
+      queryClient.setQueryData(
+        [["user", "getCartItems"], { type: "query" }],
+        previousCart?.filter((item) => item.listing.id != listingId),
+      );
+      return { previousCart, listingId };
     },
-    onError: (error) => {
+    onError: (error, item, context) => {
       toast({
         title: "Failed to remove item from cart",
         description: `${error.message}`,
         variant: "destructive",
       });
+
+      queryClient.setQueryData(
+        [["user", "getCartItems"], { type: "query" }],
+        context?.previousCart,
+      );
     },
-    onSettled: () => {
+    onSettled: async () => {
+      console.log("settled in remove item");
       // Refetch cartItems data from the server
-      void cartItemsQuery.refetch();
+      return await queryClient.invalidateQueries([
+        ["user", "getCartItems"],
+        { type: "query" },
+      ]);
     },
   });
 
   // Wrapper functions around mutations, these are made available to outter context
   const addItemToCart = (
     planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"][number],
+    setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
   ) => {
     if (!planetData?.planet?.listing?.id) {
       toast({
@@ -135,45 +144,60 @@ export default function ShoppingCartProvider({
     }
 
     console.log(`Adding item with id ${planetData.planet.listing.id} to cart.`);
-    addItemMutation.mutate({ listingId: planetData.planet.listing.id });
+    addItemMutation
+      .mutateAsync({ listingId: planetData.planet.listing.id })
+      .then(() => setIsOptimisticCallback(false))
+      .catch((err) => {
+        setIsOptimisticCallback(false);
+        console.log(
+          "Error occured in addItemMutation request",
+          JSON.stringify(err),
+        );
+      });
   };
 
-  const removeItemFromCart = (listingId: string) => {
-    removeItemMutation.mutate({
-      listingId: listingId,
-    });
+  const removeItemFromCart = (
+    listingId: string,
+    setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
+  ) => {
+    removeItemMutation
+      .mutateAsync({
+        listingId: listingId,
+      })
+      .then(() => setIsOptimisticCallback(false))
+      .catch((err) => {
+        setIsOptimisticCallback(false);
+        console.log(
+          "Error occured in removeItemMutation request",
+          JSON.stringify(err),
+        );
+      });
   };
 
   // Returns true if an item is present in our shopping cart
   // Returns false if the item is not present
   function isItemInCart(itemId: string): boolean {
-    if (!localCart) {
+
+    if (!cartItemsQuery.data) {
+      console.log(`${itemId} not in cart`);
       return false;
     }
-    return !!localCart[itemId];
-  }
 
-  // Whenever the cartItemsQuery data from the server changes
-  // Update the cart item count, and update the localCart data
-  useEffect(() => {
-    setLocalCart(
-      (prevLocalCart) =>
-        cartItemsQuery.data?.reduce(
-          (updatedCart, item) => {
-            updatedCart[item.listing.id] = item;
-            return updatedCart;
-          },
-          { ...prevLocalCart },
-        ) ?? {},
-    );
-  }, [cartItemsQuery.data, cartItemsQuery.dataUpdatedAt]);
+    for (const item of cartItemsQuery.data) {
+      if (item.listing.id == itemId) {
+        console.log(`${itemId} in cart`);
+        return true;
+      }
+    }
+    return false;
+  }
 
   return (
     <ShoppingCartContext.Provider
       value={{
         // * Notice here we are exporting the localCart state, not the actual react-query server fetched state
         // * We use the localCart state in order to perform optimistic item removals
-        cart: localCart,
+        cart: cartItemsQuery.data,
         addItemToCart: addItemToCart,
         removeItemFromCart: removeItemFromCart,
         isItemInCart: isItemInCart,

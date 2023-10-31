@@ -1,5 +1,6 @@
+import { Plus, ShoppingBasket, X } from "lucide-react";
 import { useRouter } from "next/router";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { api } from "~/utils/api";
@@ -15,6 +16,9 @@ export default function ListingPage() {
   const listingData = api.planet.getPlanetFromListingId.useQuery({
     listingId: router.query.listingId as string,
   });
+
+  // Whether or not this planet card is in an optimistic state (if it is showing optimistic data while an outbound request is processing)
+  const [isOptimistic, setIsOptimistic] = useState<boolean>(false);
 
   if (!listingData.data) {
     return (
@@ -172,19 +176,61 @@ export default function ListingPage() {
             {listingData.data.planet.name}
           </h1>
         </div>
-        <Button
-          className="mt-2 w-fit"
-          onClick={() => {
-            if (listingData.data?.id) {
-              shoppingCart.addItemToCart({
-                planet: listingData.data.planet,
-                listPrice: listingData.data.listPrice,
-              });
-            }
-          }}
-        >
-          Add to cart
-        </Button>
+        {listingData.data.id &&
+        shoppingCart.isItemInCart(listingData.data.id) ? (
+          <div
+            onClick={() => {
+              if (listingData.data?.id && !isOptimistic) {
+                setIsOptimistic(true);
+                shoppingCart.removeItemFromCart(
+                  listingData.data.id,
+                  setIsOptimistic,
+                );
+              }
+            }}
+            className={`${
+              isOptimistic
+                ? "pointer-events-none opacity-80"
+                : "pointer-events-auto opacity-100"
+            }  group flex w-fit cursor-pointer items-center rounded-md bg-pbprimary-500 p-2 transition-all hover:bg-red-500 `}
+          >
+            <p className="font-medium  text-white">Remove from cart</p>
+            <X
+              className="relative cursor-pointer rounded-full p-1 transition-transform duration-75 group-hover:scale-110 "
+              width={32}
+              height={32}
+              color="white"
+            />
+          </div>
+        ) : (
+          <div
+            onClick={() => {
+              if (listingData.data?.id && !isOptimistic) {
+                setIsOptimistic(true);
+                shoppingCart.addItemToCart(
+                  {
+                    planet: listingData.data.planet,
+                    listPrice: listingData.data.listPrice,
+                  },
+                  setIsOptimistic,
+                );
+              }
+            }}
+            className={`${
+              isOptimistic
+                ? "pointer-events-none opacity-80"
+                : "pointer-events-auto opacity-100"
+            }  group flex w-fit cursor-pointer items-center rounded-md bg-pbprimary-500 p-2 transition-all hover:bg-red-500 `}
+          >
+            <p className="font-medium  text-white">Add to cart</p>
+            <ShoppingBasket
+              className="relative ml-1 cursor-pointer rounded-full p-1 transition-transform duration-75 group-hover:scale-110 "
+              width={32}
+              height={32}
+              color="white"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

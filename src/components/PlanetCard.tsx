@@ -17,6 +17,14 @@ export default function PlanetCard({
   variant: "listing" | "showcase";
 }) {
   const shoppingCart = useContext(ShoppingCartContext);
+  // Whether or not this planet card is in an optimistic state (if it is showing optimistic data while an outbound request is processing)
+  const [isOptimistic, setIsOptimistic] = useState<boolean>(false);
+
+  console.log(
+    `${planetData.planet!.listing!.id!} in cart?: ${shoppingCart.isItemInCart(
+      planetData.planet!.listing!.id!,
+    )}`,
+  );
 
   return (
     <div>
@@ -29,13 +37,21 @@ export default function PlanetCard({
         shoppingCart.isItemInCart(planetData.planet.listing.id) ? (
           <div
             onClick={() => {
-              if (planetData.planet?.listing?.id) {
-                shoppingCart.removeItemFromCart(planetData.planet.listing.id);
+              if (planetData.planet?.listing?.id && !isOptimistic) {
+                setIsOptimistic(true);
+                shoppingCart.removeItemFromCart(
+                  planetData.planet.listing.id,
+                  setIsOptimistic,
+                );
               }
             }}
-            className="w-42 group absolute right-1 top-1 flex cursor-pointer items-center rounded-md bg-pbprimary-500 p-2 hover:bg-red-500 "
+            className={`${
+              isOptimistic
+                ? "pointer-events-none opacity-40"
+                : "pointer-events-auto opacity-100"
+            } w-42 group absolute right-1 top-1 flex cursor-pointer items-center rounded-md bg-pbprimary-500 p-2 transition-all hover:bg-red-500 `}
           >
-            <p className=" font-medium  text-white">Remove from cart</p>
+            <p className="font-medium text-white">Remove from cart</p>
             <X
               className="relative cursor-pointer rounded-full p-1 transition-transform duration-75 group-hover:scale-110 "
               width={32}
@@ -49,11 +65,16 @@ export default function PlanetCard({
               color="#494949"
               onClick={() => {
                 // Add item to card if the listing assosciated with this planet has an id
-                if (planetData) {
-                  shoppingCart.addItemToCart(planetData);
+                if (planetData && !isOptimistic) {
+                  setIsOptimistic(true);
+                  shoppingCart.addItemToCart(planetData, setIsOptimistic);
                 }
               }}
-              className={`absolute 
+              className={`${
+                isOptimistic
+                  ? "pointer-events-none opacity-40"
+                  : "pointer-events-auto opacity-100"
+              } absolute 
              right-1 top-1 cursor-pointer transition-transform duration-75 hover:scale-110 `}
               width={32}
               height={32}

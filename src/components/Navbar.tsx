@@ -73,7 +73,7 @@ function AuthDisplay() {
               <span>
                 Cart{" "}
                 {`(${
-                  shoppingCart.cart ? Object.keys(shoppingCart.cart).length : 0
+                  shoppingCart.cart ? shoppingCart.cart.length : 0
                 })`}
               </span>
             </div>
