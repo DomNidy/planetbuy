@@ -70,7 +70,12 @@ function AuthDisplay() {
               onClick={() => router.push(`${getBaseUrl()}/checkout`)}
             >
               <ShoppingBagIcon className="mr-2 h-4 w-4"></ShoppingBagIcon>
-              <span>Cart {`(${shoppingCart.itemCount ?? 0})`}</span>
+              <span>
+                Cart{" "}
+                {`(${
+                  shoppingCart.cart ? Object.keys(shoppingCart.cart).length : 0
+                })`}
+              </span>
             </div>
           </div>
         )}

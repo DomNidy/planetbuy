@@ -176,7 +176,10 @@ export default function ListingPage() {
           className="mt-2 w-fit"
           onClick={() => {
             if (listingData.data?.id) {
-              shoppingCart.addItemToCart(listingData.data?.id);
+              shoppingCart.addItemToCart({
+                planet: listingData.data.planet,
+                listPrice: listingData.data.listPrice,
+              });
             }
           }}
         >

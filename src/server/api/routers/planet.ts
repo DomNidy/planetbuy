@@ -66,7 +66,24 @@ export const planetRouter = createTRPCRouter({
     .query(async ({ input: { listingId }, ctx }) => {
       const listing = await ctx.db.listing.findUnique({
         where: { id: listingId },
-        include: { planet: true },
+        select: {
+          id: true,
+          listDate: true,
+          listPrice: true,
+          planet: {
+            select: {
+              id: true,
+              discoveryDate: true,
+              listing: true,
+              name: true,
+              owner: true,
+              quality: true,
+              surfaceArea: true,
+              temperature: true,
+              terrain: true,
+            },
+          },
+        },
       });
 
       return listing;

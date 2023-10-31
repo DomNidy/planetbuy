@@ -27,16 +27,22 @@ export default function PlanetCard({
       >
         {planetData.planet.listing?.id &&
         shoppingCart.isItemInCart(planetData.planet.listing.id) ? (
-          <X
-            className="absolute right-1 top-1  cursor-pointer rounded-full bg-pbneutral-400 p-1 transition-transform duration-75 hover:scale-110 hover:bg-red-500"
-            width={32}
-            height={32}
+          <div
             onClick={() => {
               if (planetData.planet?.listing?.id) {
                 shoppingCart.removeItemFromCart(planetData.planet.listing.id);
               }
             }}
-          />
+            className="w-42 group absolute right-1 top-1 flex cursor-pointer items-center rounded-md bg-pbprimary-500 p-2 hover:bg-red-500 "
+          >
+            <p className=" font-medium  text-white">Remove from cart</p>
+            <X
+              className="relative cursor-pointer rounded-full p-1 transition-transform duration-75 group-hover:scale-110 "
+              width={32}
+              height={32}
+              color="white"
+            />
+          </div>
         ) : (
           <>
             <ShoppingCartIcon
@@ -92,7 +98,7 @@ export default function PlanetCard({
           {formatLargeNumberToString(planetData.planet?.surfaceArea ?? 0)}
           <sup>2</sup> km
         </h3>
-        {variant === "listing" ?? (
+        {variant === "listing" && (
           <h3 className="mt-0.5 text-[18px] tracking-tighter text-pbtext-700">
             ${formatNumberToStringWithCommas(planetData.listPrice ?? 0)}
           </h3>

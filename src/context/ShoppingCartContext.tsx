@@ -9,7 +9,6 @@ type CartCTX = {
   ) => void;
   removeItemFromCart: (itemId: string) => void;
   isItemInCart: (itemId: string) => boolean;
-  itemCount: number;
 };
 
 export const ShoppingCartContext = createContext<CartCTX>({
@@ -23,7 +22,6 @@ export const ShoppingCartContext = createContext<CartCTX>({
     throw Error("Not implemented");
   },
   cart: {},
-  itemCount: 0,
 });
 
 // I want to use this to persist the shopping cart state across multiple page routes
@@ -49,11 +47,6 @@ export default function ShoppingCartProvider({
   const [localCart, setLocalCart] = useState<
     Record<string, RouterOutputs["user"]["getCartItems"][number]> | undefined
   >();
-
-  // Stores the amount of items in cart, if the query has no data, return 0
-  const [cartItemCount, setCartItemCount] = useState<number>(
-    cartItemsQuery ? cartItemsQuery.data?.length ?? 0 : 0,
-  );
 
   const addItemMutation = api.user.addItemToCart.useMutation({
     // As soon as we send out the request, increment the cart item count (optimistic update)
@@ -85,11 +78,9 @@ export default function ShoppingCartProvider({
             : {}),
         };
       });
-      setCartItemCount((past) => past + 1);
     },
     onError: (error, itemAdded) => {
       // If the request fails, decrement the cart item count
-      setCartItemCount((past) => past - 1);
 
       // Create a copy of the cart state and delete the itemId that was added during optimistic update
       const updatedMap = { ...localCart };
@@ -115,10 +106,8 @@ export default function ShoppingCartProvider({
       const updatedMap = { ...localCart };
       delete updatedMap[listingId];
       setLocalCart(updatedMap);
-      setCartItemCount((past) => (past - 1 < 0 ? 0 : past - 1));
     },
     onError: (error) => {
-      setCartItemCount((past) => past + 1);
       toast({
         title: "Failed to remove item from cart",
         description: `${error.message}`,
@@ -177,7 +166,6 @@ export default function ShoppingCartProvider({
           { ...prevLocalCart },
         ) ?? {},
     );
-    setCartItemCount(cartItemsQuery.data?.length ?? 0);
   }, [cartItemsQuery.data, cartItemsQuery.dataUpdatedAt]);
 
   return (
@@ -186,7 +174,6 @@ export default function ShoppingCartProvider({
         // * Notice here we are exporting the localCart state, not the actual react-query server fetched state
         // * We use the localCart state in order to perform optimistic item removals
         cart: localCart,
-        itemCount: cartItemCount,
         addItemToCart: addItemToCart,
         removeItemFromCart: removeItemFromCart,
         isItemInCart: isItemInCart,
