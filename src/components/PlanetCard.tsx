@@ -19,13 +19,6 @@ export default function PlanetCard({
   const shoppingCart = useContext(ShoppingCartContext);
   // Whether or not this planet card is in an optimistic state (if it is showing optimistic data while an outbound request is processing)
   const [isOptimistic, setIsOptimistic] = useState<boolean>(false);
-
-  console.log(
-    `${planetData.planet!.listing!.id!} in cart?: ${shoppingCart.isItemInCart(
-      planetData.planet!.listing!.id!,
-    )}`,
-  );
-
   return (
     <div>
       {/** Planet image here */}
