@@ -1,11 +1,4 @@
-import {
-  Cross,
-  ShoppingBagIcon,
-  ShoppingBasket,
-  ShoppingCart,
-  ShoppingCartIcon,
-  X,
-} from "lucide-react";
+import { ShoppingCartIcon, X } from "lucide-react";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
@@ -19,22 +12,11 @@ export default function PlanetCard({
   planetData,
   variant,
 }: {
-  planetData: Partial<
-    RouterOutputs["planet"]["getAllPurchasablePlanets"][number]
-  > &
+  planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"][number] &
     Partial<RouterOutputs["user"]["getUserProfile"]["planets"][number]>;
   variant: "listing" | "showcase";
 }) {
   const shoppingCart = useContext(ShoppingCartContext);
-  const [isInCart, setIsInCart] = useState<boolean>(
-    shoppingCart.isItemInCart(planetData.planet?.listing?.id ?? ""),
-  );
-
-  useEffect(() => {
-    setIsInCart(
-      shoppingCart.isItemInCart(planetData.planet?.listing?.id ?? ""),
-    );
-  }, [planetData.planet?.listing?.id, shoppingCart, shoppingCart.cart]);
 
   return (
     <div>
@@ -43,37 +25,35 @@ export default function PlanetCard({
         className=" relative mb-4  aspect-square
        rounded-2xl bg-pbneutral-500"
       >
-        {isInCart && (
+        {planetData.planet.listing?.id &&
+        shoppingCart.isItemInCart(planetData.planet.listing.id) ? (
           <X
             className="absolute right-1 top-1  cursor-pointer rounded-full bg-pbneutral-400 p-1 transition-transform duration-75 hover:scale-110 hover:bg-red-500"
             width={32}
             height={32}
             onClick={() => {
-              if (planetData.id) {
-                shoppingCart.removeItemFromCart(planetData.id);
-                setIsInCart(false);
-              }
-            }}
-          />
-        )}
-        {variant === "listing" && !isInCart ? (
-          <ShoppingCartIcon
-            color="#494949"
-            onClick={() => {
-              // Add item to card if the listing assosciated with this planet has an id
               if (planetData.planet?.listing?.id) {
-                shoppingCart.addItemToCart(planetData.planet.listing?.id);
-                setIsInCart(true);
+                shoppingCart.removeItemFromCart(planetData.planet.listing.id);
               }
             }}
-            className={`absolute 
-             right-1 top-1 cursor-pointer transition-transform duration-75 hover:scale-110 `}
-            width={32}
-            height={32}
-            fill="rgba(255,255,255,0.3)"
           />
         ) : (
-          <></>
+          <>
+            <ShoppingCartIcon
+              color="#494949"
+              onClick={() => {
+                // Add item to card if the listing assosciated with this planet has an id
+                if (planetData) {
+                  shoppingCart.addItemToCart(planetData);
+                }
+              }}
+              className={`absolute 
+             right-1 top-1 cursor-pointer transition-transform duration-75 hover:scale-110 `}
+              width={32}
+              height={32}
+              fill="rgba(255,255,255,0.3)"
+            />
+          </>
         )}
       </div>
       <Link

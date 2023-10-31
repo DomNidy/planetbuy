@@ -11,43 +11,48 @@ export default function Checkout() {
     <main className="mt-8 flex min-h-screen flex-col items-center gap-4 ">
       <h1>Here are your items:</h1>
       <div className="flex flex-col gap-2">
-        {shoppingCart?.cart?.map((cartItem) => (
-          <div
-            className="rounded-md bg-pbprimary-100 p-2 shadow-md"
-            key={cartItem.listing.planet.name}
-          >
-            <h2 className="font-semibold">
-              Planet:{" "}
-              <span className="font-medium">
-                {cartItem.listing.planet.name}
-              </span>
-            </h2>
-            <h2 className="font-semibold">
-              Price:{" "}
-              <span className="font-medium">{cartItem.listing.listPrice}</span>
-            </h2>
-            <h2 className="font-semibold">
-              Seller:{" "}
-              <span className="font-medium">
-                {cartItem.listing.planet.ownerId}
-              </span>
-            </h2>
-            <Button
-              variant={"destructive"}
-              onClick={() =>
-                shoppingCart.removeItemFromCart(cartItem.id)
-              }
+        {shoppingCart.cart &&
+          Object.values(shoppingCart.cart).map((cartItem) => (
+            <div
+              className="rounded-md bg-pbprimary-100 p-2 shadow-md"
+              key={cartItem.listing.planet.name}
             >
-              Remove from cart
-            </Button>
-          </div>
-        ))}
+              <h2 className="font-semibold">
+                Planet:{" "}
+                <span className="font-medium">
+                  {cartItem.listing.planet.name}
+                </span>
+              </h2>
+              <h2 className="font-semibold">
+                Price:{" "}
+                <span className="font-medium">
+                  {cartItem.listing.listPrice}
+                </span>
+              </h2>
+              <h2 className="font-semibold">
+                Seller:{" "}
+                <span className="font-medium">
+                  {cartItem.listing.planet.ownerId}
+                </span>
+              </h2>
+              <Button
+                variant={"destructive"}
+                onClick={() =>
+                  shoppingCart.removeItemFromCart(cartItem.listing.id)
+                }
+              >
+                Remove from cart
+              </Button>
+            </div>
+          ))}
       </div>
       <Button
         onClick={() => {
-          if (shoppingCart.cart && shoppingCart.cart?.length > 0) {
+          if (shoppingCart.cart && Object.keys(shoppingCart.cart).length > 0) {
             checkoutCart.mutate({
-              listingIDS: shoppingCart?.cart.map((item) => item.listing.id),
+              listingIDS: Object.values(shoppingCart.cart).map(
+                (item) => item.listing.id,
+              ),
             });
           }
         }}

@@ -3,8 +3,10 @@ import { useToast } from "~/components/ui/use-toast";
 import { type RouterOutputs, api } from "~/utils/api";
 
 type CartCTX = {
-  cart?: RouterOutputs["user"]["getCartItems"];
-  addItemToCart: (itemId: string) => void;
+  cart?: Record<string, RouterOutputs["user"]["getCartItems"][number]>;
+  addItemToCart: (
+    planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"][number],
+  ) => void;
   removeItemFromCart: (itemId: string) => void;
   isItemInCart: (itemId: string) => boolean;
   itemCount: number;
@@ -20,7 +22,7 @@ export const ShoppingCartContext = createContext<CartCTX>({
   removeItemFromCart() {
     throw Error("Not implemented");
   },
-  cart: [],
+  cart: {},
   itemCount: 0,
 });
 
@@ -43,18 +45,57 @@ export default function ShoppingCartProvider({
   });
 
   // We use this local state as it gives us an easier time dealing with optimistic cart item removals
+  // * localCart is keyed with listing ids
   const [localCart, setLocalCart] = useState<
-    RouterOutputs["user"]["getCartItems"] | undefined
+    Record<string, RouterOutputs["user"]["getCartItems"][number]> | undefined
   >();
+
+  // Stores the amount of items in cart, if the query has no data, return 0
+  const [cartItemCount, setCartItemCount] = useState<number>(
+    cartItemsQuery ? cartItemsQuery.data?.length ?? 0 : 0,
+  );
 
   const addItemMutation = api.user.addItemToCart.useMutation({
     // As soon as we send out the request, increment the cart item count (optimistic update)
-    onMutate: () => {
+    onMutate: (item) => {
+      // Add a temporary item to local cart for optimistic update
+      setLocalCart((past) => {
+        return {
+          ...(past
+            ? {
+                ...past,
+                [item.listingId]: {
+                  id: "Loading...",
+                  listing: {
+                    id: item.listingId,
+                    listPrice: 0,
+                    planet: {
+                      discoveryDate: new Date(),
+                      id: "Loading...",
+                      name: "Loading...",
+                      ownerId: "Loading...",
+                      quality: "COMMON",
+                      surfaceArea: 0,
+                      temperature: "COLD",
+                      terrain: "DESERTS",
+                    },
+                  },
+                },
+              }
+            : {}),
+        };
+      });
       setCartItemCount((past) => past + 1);
     },
-    onError: (error) => {
+    onError: (error, itemAdded) => {
       // If the request fails, decrement the cart item count
       setCartItemCount((past) => past - 1);
+
+      // Create a copy of the cart state and delete the itemId that was added during optimistic update
+      const updatedMap = { ...localCart };
+      delete updatedMap[itemAdded.listingId];
+      setLocalCart(updatedMap);
+
       toast({
         title: "Failed to add item to cart",
         description: `${error.message}`,
@@ -69,14 +110,11 @@ export default function ShoppingCartProvider({
 
   const removeItemMutation = api.user.removeItemFromCart.useMutation({
     // As soon as we send out request, decriment cart item count (optimistic update)
-    onMutate: ({ itemId }) => {
-      // Remove item from local cart (for optimistic deletion)
-      setLocalCart((past) => {
-        if (past) {
-          return past.filter((item) => item.id != itemId);
-        }
-        return [];
-      });
+    onMutate: ({ listingId }) => {
+      // Create a copy of the cart state and delete the listingId from it
+      const updatedMap = { ...localCart };
+      delete updatedMap[listingId];
+      setLocalCart(updatedMap);
       setCartItemCount((past) => (past - 1 < 0 ? 0 : past - 1));
     },
     onError: (error) => {
@@ -93,42 +131,54 @@ export default function ShoppingCartProvider({
     },
   });
 
-  // Stores the amount of items in cart, if the query has no data, return 0
-  const [cartItemCount, setCartItemCount] = useState<number>(
-    cartItemsQuery ? cartItemsQuery.data?.length ?? 0 : 0,
-  );
-
   // Wrapper functions around mutations, these are made available to outter context
-  const addItemToCart = (itemId: string) => {
-    addItemMutation.mutate({ itemId: itemId });
+  const addItemToCart = (
+    planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"][number],
+  ) => {
+    if (!planetData?.planet?.listing?.id) {
+      toast({
+        title: "Failed to add item to cart, please try again.",
+        description:
+          "We couldn't add this item to your cart, an internal error occured. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log(`Adding item with id ${planetData.planet.listing.id} to cart.`);
+    addItemMutation.mutate({ listingId: planetData.planet.listing.id });
   };
 
-  const removeItemFromCart = (itemId: string) => {
+  const removeItemFromCart = (listingId: string) => {
     removeItemMutation.mutate({
-      itemId: itemId,
+      listingId: listingId,
     });
   };
 
   // Returns true if an item is present in our shopping cart
   // Returns false if the item is not present
   function isItemInCart(itemId: string): boolean {
-    if (!cartItemsQuery.data) return false;
-
-    for (const item of cartItemsQuery.data) {
-      if (item.listing.id === itemId) {
-        return true;
-      }
+    if (!localCart) {
+      return false;
     }
-
-    return false;
+    return !!localCart[itemId];
   }
 
   // Whenever the cartItemsQuery data from the server changes
   // Update the cart item count, and update the localCart data
   useEffect(() => {
-    setLocalCart(cartItemsQuery.data);
+    setLocalCart(
+      (prevLocalCart) =>
+        cartItemsQuery.data?.reduce(
+          (updatedCart, item) => {
+            updatedCart[item.listing.id] = item;
+            return updatedCart;
+          },
+          { ...prevLocalCart },
+        ) ?? {},
+    );
     setCartItemCount(cartItemsQuery.data?.length ?? 0);
-  }, [cartItemsQuery.data]);
+  }, [cartItemsQuery.data, cartItemsQuery.dataUpdatedAt]);
 
   return (
     <ShoppingCartContext.Provider

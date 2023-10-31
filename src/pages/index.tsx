@@ -10,7 +10,6 @@ export default function Home() {
     <>
       <main className="flex min-h-screen flex-row justify-center gap-4  ">
         <div className="grid w-full  grid-cols-1 items-stretch gap-4 p-8 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-          {" "}
           {allPlanets.data ? (
             allPlanets.data.map((planetData) => (
               <PlanetCard

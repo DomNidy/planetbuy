@@ -96,14 +96,15 @@ export const userRouter = createTRPCRouter({
     return itemQuery.cartItems;
   }),
 
+
   addItemToCart: protectedProcedure
-    .input(z.object({ itemId: z.string() }))
-    .mutation(async ({ input: { itemId }, ctx }) => {
+    .input(z.object({ listingId: z.string() }))
+    .mutation(async ({ input: { listingId }, ctx }) => {
       try {
         // Find the user id of the person selling this item
         // This is to ensure a user does not attempt to purchase their own item
         const userIdOfSeller = await ctx.db.listing.findUnique({
-          where: { id: itemId },
+          where: { id: listingId },
           select: { planet: { select: { ownerId: true } } },
         });
 
@@ -123,7 +124,7 @@ export const userRouter = createTRPCRouter({
           await ctx.db.user.update({
             where: { id: ctx.session.user.id },
             data: {
-              cartItems: { create: { listing: { connect: { id: itemId } } } },
+              cartItems: { create: { listing: { connect: { id: listingId } } } },
             },
           });
         } catch (err) {
@@ -149,14 +150,16 @@ export const userRouter = createTRPCRouter({
     }),
   // itemId: Is the listing id of the item to remove from the users' cart
   removeItemFromCart: protectedProcedure
-    .input(z.object({ itemId: z.string() }))
-    .mutation(async ({ input: { itemId }, ctx }) => {
+    .input(z.object({ listingId: z.string() }))
+    .mutation(async ({ input: { listingId }, ctx }) => {
       try {
         // Delete the cart item with the cooresponding listingId and userId
         await ctx.db.cartItem.delete({
           where: {
-            id: itemId,
-            AND: { userId: ctx.session.user.id },
+            userId_listingId: {
+              userId: ctx.session.user.id,
+              listingId: listingId,
+            },
           },
         });
       } catch (err) {

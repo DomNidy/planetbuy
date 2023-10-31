@@ -28,7 +28,7 @@ import { formatNumberToStringWithCommas } from "~/utils/utils";
 
 export default function Navbar() {
   return (
-    <div className="fixeds top-0 z-50  flex w-full justify-between  p-4 text-black shadow-md  sm:p-10 sm:px-32">
+    <div className=" top-0 z-10   flex w-full justify-between  p-4 text-black shadow-md  sm:p-10 sm:px-32">
       <Link
         href={`${getBaseUrl()}/`}
         className={` text-pl cursor-pointer text-3xl font-bold tracking-tighter text-pbprimary-500 `}

@@ -59,6 +59,7 @@ export default function ListingsPage() {
                 variant="showcase"
                 planetData={{
                   planet: { ...planet, listing: null, owner: null },
+                  listPrice: 0,
                 }}
                 key={planet.id}
               />
