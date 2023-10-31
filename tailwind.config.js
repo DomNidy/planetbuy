@@ -16,6 +16,7 @@ module.exports = {
       },
     },
     extend: {
+
       colors: {
         pbprimary: { "100": "#fafcfb", "500": "#0EAB72", "700": "#0A714B" },
         pbneutral: { "400": "#E3E4E3", "500": "#D1D2D1" },
