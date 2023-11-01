@@ -29,10 +29,6 @@ export const ShoppingCartContext = createContext<CartCTX>({
   cart: [],
 });
 
-// I want to use this to persist the shopping cart state across multiple page routes
-// This should provide functionality to add items to shopping cart
-// This should provide functionality to checkout from the shopping cart
-
 export default function ShoppingCartProvider({
   children,
 }: {
@@ -50,7 +46,6 @@ export default function ShoppingCartProvider({
   });
 
   const addItemMutation = api.user.addItemToCart.useMutation({
-    // As soon as we send out the request, increment the cart item count (optimistic update)
     onMutate: async (item) => {
       // Cancel outgoing refetches so they dont overwrite our optimistic update
       await queryClient.cancelQueries([
@@ -88,7 +83,6 @@ export default function ShoppingCartProvider({
   });
 
   const removeItemMutation = api.user.removeItemFromCart.useMutation({
-    // As soon as we send out request, decriment cart item count (optimistic update)
     onMutate: async ({ listingId }) => {
       await queryClient.cancelQueries([
         ["user", "getCartItems"],
@@ -188,8 +182,6 @@ export default function ShoppingCartProvider({
   return (
     <ShoppingCartContext.Provider
       value={{
-        // * Notice here we are exporting the localCart state, not the actual react-query server fetched state
-        // * We use the localCart state in order to perform optimistic item removals
         cart: cartItemsQuery.data,
         addItemToCart: addItemToCart,
         removeItemFromCart: removeItemFromCart,
