@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 "use client";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { api, getBaseUrl } from "~/utils/api";
@@ -28,16 +27,18 @@ import { formatNumberToStringWithCommas } from "~/utils/utils";
 
 export default function Navbar() {
   return (
-    <div className=" top-0 z-10   flex w-full justify-between  p-4 text-black shadow-md  sm:p-10 sm:px-32">
-      <Link
-        href={`${getBaseUrl()}/`}
-        className={` text-pl cursor-pointer text-3xl font-bold tracking-tighter text-pbprimary-500 `}
-      >
-        PlanetBuy
-      </Link>
+    <div className="absolute  w-full  ">
+      <div className=" from-pbdark-800 relative top-0 z-10 flex w-full  flex-row justify-between bg-gradient-to-b to-transparent p-4 text-black  sm:p-5 sm:px-16 md:p-10 md:px-32">
+        <Link
+          href={`${getBaseUrl()}/`}
+          className={` text-pl cursor-pointer text-3xl font-bold tracking-tighter text-pbtext-500 `}
+        >
+          PlanetBuy
+        </Link>
 
-      <div className=" flex flex-col items-center gap-2">
-        <AuthDisplay />
+        <div className={`flex flex-col items-center gap-2`}>
+          <AuthDisplay />
+        </div>
       </div>
     </div>
   );
@@ -52,13 +53,15 @@ function AuthDisplay() {
   });
 
   return (
-    <div className=" flex  flex-row items-center justify-center rounded-md text-black">
+    <div
+      className={`flex flex-row items-center justify-center rounded-md text-black`}
+    >
       <div className="text-base ">
         {sessionData && (
           <div className="flex flex-row gap-2">
-            <div className="mr-4 hidden items-center gap-1 rounded-full bg-pbprimary-500 p-2 font-medium text-slate-50 transition sm:flex ">
+            <div className="text-pbdark-800 mr-4 hidden cursor-default items-center gap-1 rounded-full bg-pbprimary-100 p-2 font-medium transition sm:flex ">
               Balance:{" "}
-              <span className="font-semibold ">
+              <span className=" ">
                 $
                 {formatNumberToStringWithCommas(
                   userBalance?.data?.balance ?? 0,
@@ -66,15 +69,13 @@ function AuthDisplay() {
               </span>
             </div>
             <div
-              className="mr-4 flex cursor-pointer items-center rounded-full bg-pbprimary-500 p-2 text-slate-50 transition "
+              className="text-pbdark-800 hover:bg-pbdark-800 mr-4 flex cursor-pointer items-center rounded-full border-2 border-transparent bg-pbprimary-100 p-2 
+              transition hover:border-pbprimary-100 hover:text-white "
               onClick={() => router.push(`${getBaseUrl()}/checkout`)}
             >
               <ShoppingBagIcon className="mr-2 h-4 w-4"></ShoppingBagIcon>
               <span>
-                Cart{" "}
-                {`(${
-                  shoppingCart.cart ? shoppingCart.cart.length : 0
-                })`}
+                Cart {`(${shoppingCart.cart ? shoppingCart.cart.length : 0})`}
               </span>
             </div>
           </div>
@@ -85,14 +86,14 @@ function AuthDisplay() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              className={`flex h-9 
-                w-9 items-center justify-center  rounded-full 
-              p-0 font-semibold text-black no-underline transition`}
+              className={`hover:bg-primary-700 hover:bg-pbdark-800 group
+              flex  h-9  w-9 items-center justify-center rounded-full border-2 bg-pbprimary-100  p-0
+              font-semibold text-black no-underline transition hover:border-pbprimary-100`}
             >
-              <PersonIcon className="h-5 w-5 rounded-full text-slate-50"></PersonIcon>
+              <PersonIcon className="h-5 w-5 rounded-full text-black group-hover:text-white "></PersonIcon>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="mr-2 w-fit rounded-lg border-pbneutral-500 bg-white p-2 text-lg text-pbtext-700">
+          <DropdownMenuContent className="mr-2 w-fit rounded-lg  p-2 text-lg ">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
@@ -100,7 +101,7 @@ function AuthDisplay() {
               <DropdownMenuItem className="">
                 <Link
                   href={`${getBaseUrl()}/profile/${sessionData.user.id}`}
-                  className="flex w-full"
+                  className="flex w-full items-center"
                 >
                   <PersonIcon className="mr-2 h-4 w-4"></PersonIcon>
                   <span>Profile</span>
@@ -109,7 +110,7 @@ function AuthDisplay() {
               <DropdownMenuItem>
                 <Link
                   href={`${getBaseUrl()}/profile/${sessionData.user.id}`}
-                  className="flex w-full"
+                  className="flex w-full items-center"
                 >
                   <Container className="mr-2 h-4 w-4" />
                   <span>Your Planets</span>
@@ -121,7 +122,7 @@ function AuthDisplay() {
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <Link
-                  className="flex w-full"
+                  className="flex w-full items-center  "
                   href={`${getBaseUrl()}/create-listing`}
                 >
                   <Gavel className="mr-2 h-4 w-4" />
@@ -133,7 +134,7 @@ function AuthDisplay() {
                   href={`${getBaseUrl()}/profile/${
                     sessionData.user.id
                   }/listings`}
-                  className="flex w-full"
+                  className="flex w-full items-center"
                 >
                   <ClipboardList className="mr-2 h-4 w-4" />
                   <span>Your Listings</span>
@@ -142,7 +143,7 @@ function AuthDisplay() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <div className="flex" onClick={() => void signOut()}>
+              <div className="flex items-center" onClick={() => void signOut()}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </div>
@@ -151,8 +152,8 @@ function AuthDisplay() {
         </DropdownMenu>
       ) : (
         <button
-          className={`rounded-lg bg-pbprimary-700 px-4
-          py-2 font-semibold text-slate-50 no-underline transition hover:bg-pbprimary-500`}
+          className={`text-pbtext-800 hover:bg-pbdark-800  rounded-lg
+          bg-pbprimary-100 px-4 py-2 font-semibold no-underline transition`}
           onClick={() => void signIn()}
         >
           Sign in

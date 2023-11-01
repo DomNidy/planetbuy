@@ -154,10 +154,6 @@ export const userRouter = createTRPCRouter({
   removeItemFromCart: protectedProcedure
     .input(z.object({ listingId: z.string() }))
     .mutation(async ({ input: { listingId }, ctx }) => {
-      console.log("\n\nRemove item:");
-      console.log("User obj", JSON.stringify(ctx.session.user));
-      console.log("Listing id", listingId);
-      console.log("\n\n");
       try {
         // Delete the cart item with the cooresponding listingId and userId
         await ctx.db.cartItem.delete({

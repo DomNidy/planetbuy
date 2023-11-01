@@ -6,7 +6,7 @@ import { type RouterOutputs, api } from "~/utils/api";
 type CartCTX = {
   cart?: RouterOutputs["user"]["getCartItems"];
   addItemToCart: (
-    planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"][number],
+    planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"]["items"][number],
     setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
   ) => void;
   removeItemFromCart: (
@@ -119,7 +119,6 @@ export default function ShoppingCartProvider({
       );
     },
     onSettled: async () => {
-      console.log("settled in remove item");
       // Refetch cartItems data from the server
       return await queryClient.invalidateQueries([
         ["user", "getCartItems"],
@@ -130,7 +129,7 @@ export default function ShoppingCartProvider({
 
   // Wrapper functions around mutations, these are made available to outter context
   const addItemToCart = (
-    planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"][number],
+    planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"]["items"][number],
     setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
   ) => {
     if (!planetData?.planet?.listing?.id) {
@@ -149,7 +148,7 @@ export default function ShoppingCartProvider({
       .then(() => setIsOptimisticCallback(false))
       .catch((err) => {
         setIsOptimisticCallback(false);
-        console.log(
+        console.error(
           "Error occured in addItemMutation request",
           JSON.stringify(err),
         );
@@ -165,27 +164,21 @@ export default function ShoppingCartProvider({
         listingId: listingId,
       })
       .then(() => setIsOptimisticCallback(false))
-      .catch((err) => {
+      .catch(() => {
         setIsOptimisticCallback(false);
-        console.log(
-          "Error occured in removeItemMutation request",
-          JSON.stringify(err),
-        );
+        console.log("Error occured in removeItemMutation request");
       });
   };
 
   // Returns true if an item is present in our shopping cart
   // Returns false if the item is not present
   function isItemInCart(itemId: string): boolean {
-
     if (!cartItemsQuery.data) {
-      console.log(`${itemId} not in cart`);
       return false;
     }
 
     for (const item of cartItemsQuery.data) {
       if (item.listing.id == itemId) {
-        console.log(`${itemId} in cart`);
         return true;
       }
     }

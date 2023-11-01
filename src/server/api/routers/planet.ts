@@ -2,6 +2,7 @@ import { env } from "~/env.mjs";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
 import { generateRandomNumberWithStdDev } from "~/utils/utils";
+import { PlanetQuality, PlanetTemperatureRange } from "@prisma/client";
 
 export const planetRouter = createTRPCRouter({
   getAllPlanets: publicProcedure
@@ -29,22 +30,67 @@ export const planetRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().optional(),
-        cursor: z.object({ id: z.string() }).optional(),
+        cursor: z.object({ id: z.string() }).nullish(),
+        filters: z
+          .object({
+            planetName: z
+              .string()
+              .min(1)
+              .max(48, "Search string too long")
+              .optional(),
+            planetTemperature: z
+              .array(z.nativeEnum(PlanetTemperatureRange))
+              .optional(),
+            planetQuality: z.array(z.nativeEnum(PlanetQuality)).optional(),
+            priceRange: z
+              .object({
+                minPrice: z
+                  .number()
+                  .min(env.MIN_LISTING_PRICE)
+                  .max(env.MAX_LISTING_PRICE),
+                maxPrice: z
+                  .number()
+                  .min(env.MIN_LISTING_PRICE)
+                  .max(env.MAX_LISTING_PRICE),
+              })
+              .refine(
+                (prices) => {
+                  if (prices.minPrice > prices.maxPrice) {
+                    return false;
+                  }
+                  return true;
+                },
+                { message: "Min price must be less than the max price" },
+              )
+              .optional(),
+          })
+          .optional(),
       }),
     )
-    .query(async ({ input: { limit = 10, cursor }, ctx }) => {
-      const purchasables = await ctx.db.listing.findMany({
+    .query(async ({ input: { limit = 10, cursor, filters }, ctx }) => {
+      const items = await ctx.db.listing.findMany({
         take: limit + 1,
         cursor: cursor ? { id: cursor.id } : undefined,
-
+        where: {
+          listPrice: {
+            gte: filters?.priceRange?.minPrice,
+            lte: filters?.priceRange?.maxPrice,
+          },
+          planet: {
+            quality: { in: filters?.planetQuality },
+            temperature: { in: filters?.planetTemperature },
+            name: { startsWith: filters?.planetName },
+          },
+        },
         select: {
           listPrice: true,
+          id: true,
           planet: {
             select: {
               discoveryDate: true,
               id: true,
               name: true,
-              owner: true,
+              owner: { select: { id: true } },
               surfaceArea: true,
               quality: true,
               temperature: true,
@@ -55,7 +101,13 @@ export const planetRouter = createTRPCRouter({
         },
       });
 
-      return purchasables;
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (items.length > limit) {
+        const nextItem = items.pop();
+        nextCursor = { id: nextItem!.id };
+      }
+
+      return { items, nextCursor };
     }),
   getPlanetFromListingId: publicProcedure
     .input(

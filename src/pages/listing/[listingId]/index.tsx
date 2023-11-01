@@ -1,7 +1,6 @@
-import { Plus, ShoppingBasket, X } from "lucide-react";
+import { ShoppingBasket, X } from "lucide-react";
 import { useRouter } from "next/router";
 import { useContext, useState } from "react";
-import { Button } from "~/components/ui/button";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { api } from "~/utils/api";
 import {
@@ -22,15 +21,15 @@ export default function ListingPage() {
 
   if (!listingData.data) {
     return (
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-pbdark-800">
         Listing could not be found...
       </div>
     );
   }
 
   return (
-    <div className="mb-4 mt-4 flex min-h-screen w-full justify-center px-4 sm:mt-36 sm:px-6 md:px-16 lg:px-44">
-      <div className="flex h-fit  w-fit  flex-col  rounded-lg border-2 border-border p-4">
+    <div className="bg-pbdark-800 flex min-h-screen w-full justify-center px-4  md:px-16 lg:px-44">
+      <div className="mt-36 flex  h-fit  w-fit  flex-col rounded-lg border-2 border-border p-4">
         <div className="flex  flex-col gap-4  sm:flex-row">
           {/** Planet image here */}
           <div
@@ -108,12 +107,12 @@ export default function ListingPage() {
             </div>
 
             <div className="flex w-[17rem] flex-row justify-start  gap-2 md:w-80">
-              <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter   text-pbtext-700">
+              <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter  text-pbtext-700">
                 Temperature:
               </h2>
 
               <h2
-                className={`text-[22px] font-semibold leading-6 tracking-tighter 
+                className={`text-[22px] font-semibold leading-6 tracking-tighter  
             ${
               listingData.data.planet.temperature === "EXTREME_COLD"
                 ? "text-cyan-400"
@@ -155,7 +154,7 @@ export default function ListingPage() {
               <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter   text-pbtext-700">
                 Surface Area:
               </h2>
-              <h2 className="text-[20px] leading-6 tracking-tighter ">
+              <h2 className="text-[20px] leading-6 tracking-tighter text-pbtext-500 ">
                 {formatLargeNumberToString(listingData.data.planet.surfaceArea)}
                 <sup>2</sup> km
               </h2>
@@ -172,7 +171,7 @@ export default function ListingPage() {
           </div>
         </div>
         <div className="flex w-full flex-row justify-between">
-          <h1 className="text-[28px] font-semibold leading-6 tracking-tighter text-pbtext-700 ">
+          <h1 className="text-[28px] font-semibold leading-6 tracking-tighter text-pbtext-500 ">
             {listingData.data.planet.name}
           </h1>
         </div>
@@ -211,6 +210,7 @@ export default function ListingPage() {
                   {
                     planet: listingData.data.planet,
                     listPrice: listingData.data.listPrice,
+                    id: listingData.data.id,
                   },
                   setIsOptimistic,
                 );

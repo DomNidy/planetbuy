@@ -54,115 +54,118 @@ export default function GenerateRandom() {
     generateRandomPlanets.mutate(values);
   }
   return (
-    <Form {...form}>
-      <form
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="ml-10 mt-14 w-[500px] space-y-4"
-      >
-        <FormField
-          control={form.control}
-          name="planetsToGenerate"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Planets to generate</FormLabel>
-              <FormDescription>
-                How many planets would you like to generate?
-              </FormDescription>
-              <FormControl>
-                <Input placeholder="35" {...field}></Input>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="meanPlanetStats.valueMean"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Mean planet value</FormLabel>
-              <FormDescription>
-                What should the mean value of generated planets be
-              </FormDescription>
-              <FormControl>
-                <Input
-                  placeholder="10,000"
-                  {...field}
-                  value={undefined}
-                ></Input>
-              </FormControl>
-              <p className="text-sm font-bold ordinal text-muted-foreground">
-                {formatLargeNumberToString(field.value)}
-              </p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="stdDeviationPlanetStats.valueStdDev"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Std deviation of planet value</FormLabel>
-              <FormDescription>
-                What should the standard deviation of planet values generated be
-              </FormDescription>
-              <FormControl>
-                <Input placeholder="4" {...field} value={undefined}></Input>
-              </FormControl>
-              <p className="text-sm font-bold ordinal text-muted-foreground">
-                {formatLargeNumberToString(field.value)}
-              </p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="meanPlanetStats.surfaceAreaMean"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Mean surface area</FormLabel>
-              <FormDescription>
-                What should the mean surface area be
-              </FormDescription>
-              <FormControl>
-                <Input
-                  placeholder="2,500,000"
-                  {...field}
-                  value={undefined}
-                ></Input>
-              </FormControl>
-              <p className="text-sm font-bold ordinal text-muted-foreground">
-                {formatLargeNumberToString(field.value)}
-              </p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="stdDeviationPlanetStats.surfaceAreaStdDev"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Std deviation surface area</FormLabel>
-              <FormDescription>
-                What should the standard deviation of planet surface areas
-                generated be
-              </FormDescription>
-              <FormControl>
-                <Input placeholder="3" {...field} value={undefined}></Input>
-              </FormControl>
-              <p className="text-sm font-bold ordinal text-muted-foreground">
-                {formatLargeNumberToString(field.value)}
-              </p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Create listing</Button>
-      </form>
-    </Form>
+    <div >
+      <Form {...form}>
+        <form
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="ml-10 pt-32 w-[500px] space-y-4"
+        >
+          <FormField
+            control={form.control}
+            name="planetsToGenerate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Planets to generate</FormLabel>
+                <FormDescription>
+                  How many planets would you like to generate?
+                </FormDescription>
+                <FormControl>
+                  <Input placeholder="35" {...field}></Input>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="meanPlanetStats.valueMean"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mean planet value</FormLabel>
+                <FormDescription>
+                  What should the mean value of generated planets be
+                </FormDescription>
+                <FormControl>
+                  <Input
+                    placeholder="10,000"
+                    {...field}
+                    value={undefined}
+                  ></Input>
+                </FormControl>
+                <p className="text-sm font-bold ordinal text-muted-foreground">
+                  {formatLargeNumberToString(field.value)}
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="stdDeviationPlanetStats.valueStdDev"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Std deviation of planet value</FormLabel>
+                <FormDescription>
+                  What should the standard deviation of planet values generated
+                  be
+                </FormDescription>
+                <FormControl>
+                  <Input placeholder="4" {...field} value={undefined}></Input>
+                </FormControl>
+                <p className="text-sm font-bold ordinal text-muted-foreground">
+                  {formatLargeNumberToString(field.value)}
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="meanPlanetStats.surfaceAreaMean"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mean surface area</FormLabel>
+                <FormDescription>
+                  What should the mean surface area be
+                </FormDescription>
+                <FormControl>
+                  <Input
+                    placeholder="2,500,000"
+                    {...field}
+                    value={undefined}
+                  ></Input>
+                </FormControl>
+                <p className="text-sm font-bold ordinal text-muted-foreground">
+                  {formatLargeNumberToString(field.value)}
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="stdDeviationPlanetStats.surfaceAreaStdDev"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Std deviation surface area</FormLabel>
+                <FormDescription>
+                  What should the standard deviation of planet surface areas
+                  generated be
+                </FormDescription>
+                <FormControl>
+                  <Input placeholder="3" {...field} value={undefined}></Input>
+                </FormControl>
+                <p className="text-sm font-bold ordinal text-muted-foreground">
+                  {formatLargeNumberToString(field.value)}
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit">Create listing</Button>
+        </form>
+      </Form>
+    </div>
   );
 }

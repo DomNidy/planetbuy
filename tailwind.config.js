@@ -18,9 +18,10 @@ module.exports = {
     extend: {
 
       colors: {
-        pbprimary: { "100": "#fafcfb", "500": "#0EAB72", "700": "#0A714B" },
+        pbdark: { "850": "#070609", "800": "#020013" },
+        pbprimary: { "100": "#fafcfb", "400": "#cb70ff", "500": "#c35cff", "600": "#B433FF", "700": "#a50aff" },
         pbneutral: { "400": "#E3E4E3", "500": "#D1D2D1" },
-        pbtext: { "500": "#6A6969", "700": "#444444" },
+        pbtext: { "500": "#FAFAFA", "700": "#C2C2C2", "800": "#ADADAD" },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

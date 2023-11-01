@@ -123,3 +123,22 @@ export function generateRandomNumberWithStdDev(
 
   return Math.abs(randomValue);
 }
+
+/**
+ * Function which returns true when the user is scrolled
+ * near the bottom of the page. (Specified by the threshold prope)
+ * @param {number} threshold When the user is scrolled closer than this distance (in pixels) from the bottom of the page, returns true
+ * @returns {any}
+ */
+export function isScrolledToBottom(threshold: number): boolean {
+  const scrollPos = window.scrollY;
+  const totalHeight =
+    document.documentElement.scrollHeight - window.innerHeight;
+
+  // Check if the scroll position is near the bottom
+  if (scrollPos >= totalHeight - threshold) {
+    return true;
+  } else {
+    return false;
+  }
+}

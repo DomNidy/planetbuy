@@ -11,12 +11,12 @@ export default function ListingsPage() {
   });
 
   if (!userProfile.data) {
-    return <div className="flex min-h-screen w-full"></div>;
+    return <div className="flex min-h-screen w-full bg-pbdark-800"></div>;
   }
 
   return (
-    <div className="mb-4 mt-4 flex min-h-screen w-full justify-center px-4 sm:mt-36 sm:px-20">
-      <div className="flex w-full flex-col rounded-lg border-2 border-border p-4">
+    <div className="bg-pbdark-800 flex min-h-screen w-full justify-center px-4 ">
+      <div className="mb-4 mt-4 flex w-full flex-col rounded-lg border-2 border-border p-4 sm:mt-36 sm:px-20">
         <div className="flex h-fit gap-4">
           <div className="h-60 w-60">
             {userProfile.data?.image ? (
@@ -60,6 +60,7 @@ export default function ListingsPage() {
                 planetData={{
                   planet: { ...planet, listing: null, owner: null },
                   listPrice: 0,
+                  id: "",
                 }}
                 key={planet.id}
               />
