@@ -18,7 +18,7 @@ module.exports = {
     extend: {
 
       colors: {
-        pbdark: { "850": "#070609", "800": "#020013" },
+        pbdark: { "850": "#050410", "800": "#020013", "700": '#050033' },
         pbprimary: { "100": "#fafcfb", "400": "#cb70ff", "500": "#c35cff", "600": "#B433FF", "700": "#a50aff" },
         pbneutral: { "400": "#E3E4E3", "500": "#D1D2D1" },
         pbtext: { "500": "#FAFAFA", "700": "#C2C2C2", "800": "#ADADAD" },

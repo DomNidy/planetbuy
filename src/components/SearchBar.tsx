@@ -24,7 +24,7 @@ export default function SearchBar() {
       <div className=" flex h-16 items-center justify-center rounded-r-full border-[2px] border-pbneutral-500 bg-pbneutral-400 p-4 text-lg text-neutral-700 ">
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="rounded-full">
+            <Button className="rounded-full bg-pbdark-850">
               <span className="flex items-center justify-center ">
                 Filter Results
                 <Filter />

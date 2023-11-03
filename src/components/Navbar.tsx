@@ -98,7 +98,7 @@ function AuthDisplay() {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem className="">
+              <DropdownMenuItem className="cursor-pointer">
                 <Link
                   href={`${getBaseUrl()}/profile/${sessionData.user.id}`}
                   className="flex w-full items-center"
@@ -107,7 +107,7 @@ function AuthDisplay() {
                   <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <Link
                   href={`${getBaseUrl()}/profile/${sessionData.user.id}`}
                   className="flex w-full items-center"
@@ -120,7 +120,7 @@ function AuthDisplay() {
             <DropdownMenuLabel>Marketplace</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <Link
                   className="flex w-full items-center  "
                   href={`${getBaseUrl()}/create-listing`}
@@ -129,7 +129,7 @@ function AuthDisplay() {
                   <span>Create a Listing</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
                 <Link
                   href={`${getBaseUrl()}/profile/${
                     sessionData.user.id
@@ -142,8 +142,11 @@ function AuthDisplay() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <div className="flex items-center" onClick={() => void signOut()}>
+            <DropdownMenuItem className="cursor-pointer">
+              <div
+                className="flex items-center "
+                onClick={() => void signOut()}
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </div>
@@ -151,13 +154,9 @@ function AuthDisplay() {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <button
-          className={`rounded-lg border-2 border-pbtext-500 border-opacity-0 bg-pbprimary-100 px-4 py-2  font-semibold
-          text-pbdark-850 no-underline transition hover:border-opacity-100 hover:bg-pbdark-800 hover:text-pbtext-500`}
-          onClick={() => void signIn()}
-        >
+        <Button variant={"foreground"} onClick={() => void signIn()}>
           Sign in
-        </button>
+        </Button>
       )}
     </div>
   );

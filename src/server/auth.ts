@@ -89,6 +89,7 @@ export const authOptions: NextAuthOptions = {
       log(code, metadata);
     },
   },
+  pages: {signIn: '/auth/signin'},
   session: {
     strategy: "jwt",
     generateSessionToken() {
@@ -167,6 +168,7 @@ export const authOptions: NextAuthOptions = {
             },
           });
 
+          // Return the newly created user data
           return newGuest;
         }
 
