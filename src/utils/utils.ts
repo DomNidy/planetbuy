@@ -142,3 +142,27 @@ export function isScrolledToBottom(threshold: number): boolean {
     return false;
   }
 }
+
+export function generateRandomPlanetName(): string {
+  const vowels = "aeiou";
+  const consonants = "bcdfghjklmnpqrstvwxyz";
+  const nameLength = Math.floor(Math.random() * 8) + 2;
+  let planetName = "";
+
+  for (let i = 0; i < nameLength; i++) {
+    if (i % 2 === 0) {
+      // If even position, add a consonant
+      const randomConsonant =
+        consonants[Math.floor(Math.random() * consonants.length)];
+      planetName += randomConsonant;
+    } else {
+      // If odd position, add a vowel
+      const randomVowel = vowels[Math.floor(Math.random() * vowels.length)];
+      planetName += randomVowel;
+    }
+  }
+  // Capitalize the first character
+  planetName = planetName.charAt(0).toUpperCase() + planetName.slice(1);
+  
+  return planetName;
+}

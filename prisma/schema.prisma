@@ -86,6 +86,7 @@ model CartItem {
 model User {
     id            String     @id @unique @default(cuid())
     name          String?
+    isGuest       Boolean?   @default(false)
     email         String?    @unique
     emailVerified DateTime?
     image         String?

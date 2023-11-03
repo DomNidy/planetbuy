@@ -1,5 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { type SetStateAction, createContext, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { type SetStateAction, createContext } from "react";
 import { useToast } from "~/components/ui/use-toast";
 import { type RouterOutputs, api } from "~/utils/api";
 
@@ -38,6 +40,9 @@ export default function ShoppingCartProvider({
   const { toast } = useToast();
 
   const queryClient = useQueryClient();
+  const session = useSession();
+
+  const router = useRouter();
 
   // Cart item state is retrieved from api
   const cartItemsQuery = api.user.getCartItems.useQuery(undefined, {
@@ -126,6 +131,10 @@ export default function ShoppingCartProvider({
     planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"]["items"][number],
     setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
   ) => {
+    if (session.status === "unauthenticated") {
+      router.push("http://localhost:3000/api/auth/signin");
+    }
+
     if (!planetData?.planet?.listing?.id) {
       toast({
         title: "Failed to add item to cart, please try again.",

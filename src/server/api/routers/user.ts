@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { db } from "~/server/db";
 import { Prisma } from "@prisma/client";
 
 export const userRouter = createTRPCRouter({
@@ -43,7 +42,7 @@ export const userRouter = createTRPCRouter({
           id: true,
         },
       });
-
+      
       // If the user has insufficient balance to purchase items return
       if (user?.balance && user.balance < cartTotal) {
         throw new TRPCError({

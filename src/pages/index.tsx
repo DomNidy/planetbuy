@@ -2,15 +2,21 @@ import { api } from "~/utils/api";
 import PlanetCard from "~/components/PlanetCard";
 import Hero from "~/components/Hero";
 import SearchBar from "~/components/SearchBar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { isScrolledToBottom } from "~/utils/utils";
 import PlanetCardSkeleton from "~/components/PlanetCardSkeleton";
+import { type RouterInputs } from "~/utils/api";
 
 export default function Home() {
+  const [filters, setFilters] = useState<
+    RouterInputs["planet"]["getAllPurchasablePlanets"]["filters"]
+  >({});
+
   //* Planet listing infinite scroll code
   const allPlanets = api.planet.getAllPurchasablePlanets.useInfiniteQuery(
     {
       limit: 10,
+      filters: filters,
     },
     { getNextPageParam: (lastPage) => lastPage.nextCursor },
   );

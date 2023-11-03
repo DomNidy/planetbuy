@@ -1,8 +1,15 @@
 import { env } from "~/env.mjs";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
-import { generateRandomNumberWithStdDev } from "~/utils/utils";
-import { PlanetQuality, PlanetTemperatureRange } from "@prisma/client";
+import {
+  generateRandomNumberWithStdDev,
+  generateRandomPlanetName,
+} from "~/utils/utils";
+import {
+  PlanetQuality,
+  PlanetTemperatureRange,
+  PlanetTerrain,
+} from "@prisma/client";
 
 export const planetRouter = createTRPCRouter({
   getAllPlanets: publicProcedure
@@ -175,9 +182,30 @@ export const planetRouter = createTRPCRouter({
       }) => {
         // Randomly generate planet data and create listings for them
         for (let i = 0; i < planetsToGenerate; i++) {
+          // Generate random planet metadata
+          const temperatureArray = Object.values(PlanetTemperatureRange);
+          const temperature =
+            temperatureArray[
+              Math.floor(Math.random() * temperatureArray.length)
+            ];
+
+          const terrainArray = Object.values(PlanetTerrain);
+          const terrain =
+            terrainArray[Math.floor(Math.random() * terrainArray.length)];
+
+          // Randomly generated numbers must be greater than qualityProbability in order to increment planet quality
+          // Increasing qualityProbability will decrease the probability of higher quality planets being chosen
+          const qualityProbability = 0.7;
+          const qualityArray = Object.values(PlanetQuality);
+          let qualityIdx = 0;
+          while (Math.random() > qualityProbability && qualityIdx < 4) {
+            qualityIdx += 1;
+          }
+          const quality = qualityArray[qualityIdx];
+
           await ctx.db.planet.create({
             data: {
-              name: `A Planet ${i}`,
+              name: generateRandomPlanetName(),
               surfaceArea: Math.round(
                 generateRandomNumberWithStdDev(
                   meanPlanetStats.surfaceAreaMean,
@@ -185,9 +213,9 @@ export const planetRouter = createTRPCRouter({
                 ),
               ),
               discoveryDate: new Date(),
-              quality: "UNIQUE",
-              temperature: "TEMPERATE",
-              terrain: "FORESTS",
+              quality: quality,
+              temperature: temperature,
+              terrain: terrain,
               listing: {
                 create: {
                   listPrice: Math.round(

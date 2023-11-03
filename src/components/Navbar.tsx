@@ -28,7 +28,7 @@ import { formatNumberToStringWithCommas } from "~/utils/utils";
 export default function Navbar() {
   return (
     <div className="absolute  w-full  ">
-      <div className=" from-pbdark-800 relative top-0 z-10 flex w-full  flex-row justify-between bg-gradient-to-b to-transparent p-4 text-black  sm:p-5 sm:px-16 md:p-10 md:px-32">
+      <div className=" relative top-0 z-10 flex w-full flex-row  justify-between bg-gradient-to-b from-pbdark-800 to-transparent p-4 text-black  sm:p-5 sm:px-16 md:p-10 md:px-32">
         <Link
           href={`${getBaseUrl()}/`}
           className={` text-pl cursor-pointer text-3xl font-bold tracking-tighter text-pbtext-500 `}
@@ -59,7 +59,7 @@ function AuthDisplay() {
       <div className="text-base ">
         {sessionData && (
           <div className="flex flex-row gap-2">
-            <div className="text-pbdark-800 mr-4 hidden cursor-default items-center gap-1 rounded-full bg-pbprimary-100 p-2 font-medium transition sm:flex ">
+            <div className="mr-4 hidden cursor-default items-center gap-1 rounded-full bg-pbprimary-100 p-2 font-medium text-pbdark-800 transition sm:flex ">
               Balance:{" "}
               <span className=" ">
                 $
@@ -69,8 +69,8 @@ function AuthDisplay() {
               </span>
             </div>
             <div
-              className="text-pbdark-800 hover:bg-pbdark-800 mr-4 flex cursor-pointer items-center rounded-full border-2 border-transparent bg-pbprimary-100 p-2 
-              transition hover:border-pbprimary-100 hover:text-white "
+              className="mr-4 flex cursor-pointer items-center rounded-full border-2 border-transparent bg-pbprimary-100 p-2 text-pbdark-800 transition 
+              hover:border-pbprimary-100 hover:bg-pbdark-800 hover:text-white "
               onClick={() => router.push(`${getBaseUrl()}/checkout`)}
             >
               <ShoppingBagIcon className="mr-2 h-4 w-4"></ShoppingBagIcon>
@@ -86,9 +86,9 @@ function AuthDisplay() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              className={`hover:bg-primary-700 hover:bg-pbdark-800 group
-              flex  h-9  w-9 items-center justify-center rounded-full border-2 bg-pbprimary-100  p-0
-              font-semibold text-black no-underline transition hover:border-pbprimary-100`}
+              className={`hover:bg-primary-700 group flex
+              h-9  w-9  items-center justify-center rounded-full border-2 bg-pbprimary-100 p-0  font-semibold
+              text-black no-underline transition hover:border-pbprimary-100 hover:bg-pbdark-800`}
             >
               <PersonIcon className="h-5 w-5 rounded-full text-black group-hover:text-white "></PersonIcon>
             </Button>
@@ -152,8 +152,8 @@ function AuthDisplay() {
         </DropdownMenu>
       ) : (
         <button
-          className={`text-pbtext-800 hover:bg-pbdark-800  rounded-lg
-          bg-pbprimary-100 px-4 py-2 font-semibold no-underline transition`}
+          className={`rounded-lg border-2 border-pbtext-500 border-opacity-0 bg-pbprimary-100 px-4 py-2  font-semibold
+          text-pbdark-850 no-underline transition hover:border-opacity-100 hover:bg-pbdark-800 hover:text-pbtext-500`}
           onClick={() => void signIn()}
         >
           Sign in

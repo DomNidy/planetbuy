@@ -7,9 +7,12 @@ import {
 } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import DiscordProvider from "next-auth/providers/discord";
-
+import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "~/env.mjs";
 import { db } from "~/server/db";
+import { log } from "console";
+import { randomUUID } from "crypto";
+import { guestNameSchema } from "~/utils/schemas";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -21,15 +24,11 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: DefaultSession["user"] & {
       id: string;
+      isGuest: boolean;
       // ...other properties
       // role: UserRole;
     };
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
 }
 
 /**
@@ -39,16 +38,64 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session: async ({ session, token, user, newSession, trigger }) => {
+      console.log("-- Session callback --");
+      console.log("session", session);
+      console.log("token", token);
+      console.log("user", user);
+      console.log("new session", newSession);
+      console.log("trigger", trigger);
+
+      // Lookup if the user is a guest
+      // If the user is a guest, add it to their session
+      const userData = await db.user.findUnique({
+        where: { id: token.sub },
+        select: { isGuest: true },
+      });
+
+      const isUserGuest = !!userData?.isGuest;
+
+      return {
+        user: {
+          id: token.sub,
+          email: token.email,
+          name: token.name,
+          isGuest: isUserGuest,
+        },
+        expires: session.expires,
+      };
+    },
+    signIn(params) {
+      console.log("\n-- Sign in callback --");
+      console.log("params", params);
+      return true;
+    },
+    jwt(params) {
+      console.log("\n-- JWT callback--");
+      console.log("params", params);
+      return params.token;
+    },
   },
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+
   adapter: PrismaAdapter(db),
+  logger: {
+    error(code, metadata) {
+      log(code, metadata);
+    },
+    warn(code) {
+      log(code);
+    },
+    debug(code, metadata) {
+      log(code, metadata);
+    },
+  },
+  session: {
+    strategy: "jwt",
+    generateSessionToken() {
+      console.log("Generating token");
+      return randomUUID();
+    },
+  },
   providers: [
     GitHubProvider({
       clientId: env.GITHUB_ID,
@@ -72,6 +119,62 @@ export const authOptions: NextAuthOptions = {
               ? "http://localhost:3000/api/auth/callback/discord"
               : "https://planetbuy.vercel.app/api/auth/callback/discord",
         },
+      },
+    }),
+
+    CredentialsProvider({
+      name: "Guest Account",
+      type: "credentials",
+      credentials: {
+        guestName: {
+          label: "Guest name",
+          placeholder: "johndoe",
+          type: "text",
+        },
+      },
+      // This callback is only triggered for the credentials provider
+      async authorize(credentials, req) {
+        console.log("\n-- AUTHORIZE CALLBACK --");
+        const guestName = await guestNameSchema.parseAsync(
+          credentials?.guestName,
+        );
+
+        // Find the user in the database
+        const user = await db.user.findUnique({
+          where: { name: guestName, email: guestName, isGuest: true },
+          select: {
+            id: true,
+            email: true,
+            image: true,
+            name: true,
+            isGuest: true,
+          },
+        });
+
+        // If we could not find a matching guest user, create one
+        if (!user) {
+          const newGuest = await db.user.create({
+            data: {
+              name: guestName,
+              email: guestName,
+              balance: 125000,
+              isGuest: true,
+            },
+            select: {
+              name: true,
+              email: true,
+              id: true,
+            },
+          });
+
+          return newGuest;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        };
       },
     }),
 

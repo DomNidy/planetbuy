@@ -8,5 +8,5 @@ export default function ListingsPage() {
     userId: router.query.uid as string,
   });
 
-  return <div className="min-h-screen w-full">{userListings.data?.name}</div>;
+  return <div className="min-h-screen w-full ">{userListings.data?.name}</div>;
 }

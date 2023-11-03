@@ -10,7 +10,7 @@ import React from "react";
 import { TailwindIndicator } from "~/components/TailwindIndicator";
 import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Poppins, Pixelify_Sans, Overpass } from "next/font/google";
+import { Overpass } from "next/font/google";
 
 export const overpass = Overpass({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -22,7 +22,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={session} baseUrl="123">
       <QueryClientProvider client={useQueryClient()}>
         <ShoppingCartProvider>
           <TailwindIndicator />

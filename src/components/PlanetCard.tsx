@@ -24,7 +24,8 @@ export default function PlanetCard({
 
   // Whether or not the user owns the planet assosciated with this card
   const [isUserOwner] = useState<boolean>(
-    planetData.planet.owner?.id === session.data?.user.id,
+    planetData.planet.owner?.id === session.data?.user.id &&
+      !!session.data?.user,
   );
 
   return (
@@ -51,7 +52,7 @@ export default function PlanetCard({
               isOptimistic
                 ? "pointer-events-none opacity-70"
                 : "pointer-events-auto opacity-100"
-            } w-42 bg-pbdark-850 group absolute right-1 top-1 flex cursor-pointer items-center rounded-md p-2 transition-all hover:bg-red-500 `}
+            } w-42 group absolute right-1 top-1 flex cursor-pointer items-center rounded-md bg-pbdark-850 p-2 transition-all hover:bg-red-500 `}
           >
             <p className="font-medium text-white">In cart</p>
             <X
@@ -86,7 +87,7 @@ export default function PlanetCard({
                 />
               </>
             ) : (
-              <p className="bg-pbdark-850 absolute right-1 top-1 cursor-default rounded-lg p-3 text-center  font-semibold text-pbtext-500">
+              <p className="absolute right-1 top-1 cursor-default rounded-lg bg-pbdark-850 p-3 text-center  font-semibold text-pbtext-500">
                 You own this
               </p>
             )}
