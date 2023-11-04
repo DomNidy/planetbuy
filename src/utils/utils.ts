@@ -161,8 +161,28 @@ export function generateRandomPlanetName(): string {
       planetName += randomVowel;
     }
   }
+
+  // Random additional words that we may append to the planet name to make things more interesting
+  const flavorWords = [
+    "Scar",
+    "Land",
+    "Hallow",
+    "Revere",
+    "Quaint",
+    "Mire",
+    "Grasp",
+    "Bane",
+    "Planet",
+    "Hold",
+  ];
+
   // Capitalize the first character
   planetName = planetName.charAt(0).toUpperCase() + planetName.slice(1);
-  
+
+  // Add a random flavor word to planet name
+  if (Math.random() * 100 > 96) {
+    planetName += " " + flavorWords[Math.round(Math.random() * flavorWords.length) - 1];
+  }
+
   return planetName;
 }

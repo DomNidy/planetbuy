@@ -76,7 +76,12 @@ export const authOptions: NextAuthOptions = {
       return params.token;
     },
   },
-
+  session: {
+    strategy: "jwt",
+    generateSessionToken() {
+      return randomUUID();
+    },
+  },
   adapter: PrismaAdapter(db),
   logger: {
     error(code, metadata) {
@@ -90,13 +95,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {signIn: '/auth/signin'},
-  session: {
-    strategy: "jwt",
-    generateSessionToken() {
-      console.log("Generating token");
-      return randomUUID();
-    },
-  },
+
   providers: [
     GitHubProvider({
       clientId: env.GITHUB_ID,
