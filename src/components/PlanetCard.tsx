@@ -1,7 +1,8 @@
 import { ShoppingCartIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { getBaseUrl, type RouterOutputs } from "~/utils/api";
 import {
@@ -13,8 +14,7 @@ export default function PlanetCard({
   planetData,
   variant,
 }: {
-  planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"]["items"][number] &
-    Partial<RouterOutputs["user"]["getUserProfile"]["planets"][number]>;
+  planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"]["items"][number];
   variant: "listing" | "showcase";
 }) {
   const shoppingCart = useContext(ShoppingCartContext);
@@ -31,10 +31,19 @@ export default function PlanetCard({
   return (
     <div>
       {/** Planet image here */}
+
       <div
         className=" relative mb-4  aspect-square
        rounded-2xl bg-pbneutral-500"
       >
+        {planetData?.planet?.imageURL && (
+          <Image
+            src={planetData.planet.imageURL}
+            alt=""
+            width={1024}
+            height={1024}
+          />
+        )}
         {planetData.planet.listing?.id &&
         variant === "listing" &&
         shoppingCart.isItemInCart(planetData.planet.listing.id) ? (

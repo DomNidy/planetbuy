@@ -46,6 +46,7 @@ model Planet {
     quality     PlanetQuality          @default(COMMON)
     temperature PlanetTemperatureRange @default(TEMPERATE)
     terrain     PlanetTerrain          @default(DESERTS)
+    imageURL    String?
 
     owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
     ownerId String?

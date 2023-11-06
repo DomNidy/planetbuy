@@ -42,7 +42,7 @@ export const userRouter = createTRPCRouter({
           id: true,
         },
       });
-      
+
       // If the user has insufficient balance to purchase items return
       if (user?.balance && user.balance < cartTotal) {
         throw new TRPCError({
@@ -176,7 +176,25 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.db.user.findUniqueOrThrow({
         where: { id: input.userId },
-        select: { name: true, planets: true, image: true },
+        select: {
+          name: true,
+          planets: {
+            orderBy: { quality: "desc" },
+            select: {
+              discoveryDate: true,
+              id: true,
+              name: true,
+              owner: { select: { id: true } },
+              surfaceArea: true,
+              quality: true,
+              temperature: true,
+              terrain: true,
+              listing: { select: { listDate: true, id: true } },
+              imageURL: true,
+            },
+          },
+          image: true,
+        },
       });
     }),
   createPlanetCard: protectedProcedure

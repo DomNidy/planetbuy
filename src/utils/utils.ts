@@ -1,5 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { planetImagePropertiesSchema } from "./schemas";
+import { PlanetTemperatureRange, PlanetTerrain } from "@prisma/client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -146,7 +148,7 @@ export function isScrolledToBottom(threshold: number): boolean {
 export function generateRandomPlanetName(): string {
   const vowels = "aeiou";
   const consonants = "bcdfghjklmnpqrstvwxyz";
-  const nameLength = Math.floor(Math.random() * 8) + 2;
+  const nameLength = Math.max(Math.floor(Math.random() * 6) + 2, 4);
   let planetName = "";
 
   for (let i = 0; i < nameLength; i++) {
@@ -176,13 +178,76 @@ export function generateRandomPlanetName(): string {
     "Hold",
   ];
 
+  // Add a random flavor word to planet name
+  if (Math.random() * 100 > 96) {
+    planetName +=
+      " " + flavorWords[Math.round(Math.random() * flavorWords.length) - 1];
+  }
+
   // Capitalize the first character
   planetName = planetName.charAt(0).toUpperCase() + planetName.slice(1);
 
-  // Add a random flavor word to planet name
+  // Add prefixes, suffixes, or combine words for added interest
   if (Math.random() * 100 > 96) {
-    planetName += " " + flavorWords[Math.round(Math.random() * flavorWords.length) - 1];
+    const prefixes = ["Nova", "Terra", "Cyber", "Aqua", "Exo"];
+    const suffixes = ["Prime", "Secunda", "Ultima", "Omega", "Nebula"];
+    const compoundWords = ["Star", "Cosmo", "Galax", "Orbit", "Astro"];
+
+    const randomOption = Math.floor(Math.random() * 3);
+    if (randomOption === 0) {
+      planetName = prefixes[Math.floor(Math.random() * prefixes.length)] + " " + planetName;
+    } else if (randomOption === 1) {
+      planetName = planetName + " " + suffixes[Math.floor(Math.random() * suffixes.length)];
+    } else {
+      planetName = compoundWords[Math.floor(Math.random() * compoundWords.length)] + " " + planetName;
+    }
   }
 
   return planetName;
+}
+
+export function parsePlanetImagePropertiesFromFilename(
+  filename: string,
+): Zod.infer<typeof planetImagePropertiesSchema> | undefined {
+  // Parse planet image properties from filename
+  const parsedImagePropertiesFromFileName: string[] = filename
+    .replace(".jpg", "")
+    .split(" ");
+
+  // Declare variables which will corespond to the image properties once we finish parsing them from the file name
+  let planetTemperature: PlanetTemperatureRange | undefined;
+  let planetTerrain: PlanetTerrain | undefined;
+
+  // Parse the temperature property string from image props
+  for (const prop of parsedImagePropertiesFromFileName) {
+    // Check if the current string matches a member of the PlanetTemperatureRange enum
+    if (
+      Object.values(PlanetTemperatureRange).includes(
+        prop as PlanetTemperatureRange,
+      )
+    ) {
+      // If we find a string that matches a temperature property, assign the variable and break
+      planetTemperature = prop as PlanetTemperatureRange;
+      break;
+    }
+  }
+
+  // Parse the terrain property string from image props
+  for (const prop of parsedImagePropertiesFromFileName) {
+    // Check if the current string matches a member of the PlanetTerrain enum
+    if (Object.values(PlanetTerrain).includes(prop as PlanetTerrain)) {
+      // If we find a string that matches a temperature property, assign the variable and break
+      planetTerrain = prop as PlanetTerrain;
+      break;
+    }
+  }
+
+  if (planetTemperature && planetTerrain) {
+    return {
+      planetTemperature: planetTemperature,
+      planetTerrain: planetTerrain,
+    };
+  }
+
+  return undefined;
 }

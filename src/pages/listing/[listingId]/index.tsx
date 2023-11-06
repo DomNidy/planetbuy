@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useContext, useState } from "react";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { api } from "~/utils/api";
+import Image from "next/image";
 import {
   formatLargeNumberToString,
   formatNumberToStringWithCommas,
@@ -28,14 +29,23 @@ export default function ListingPage() {
   }
 
   return (
-    <div className="bg-pbdark-800 flex min-h-screen w-full justify-center px-4  md:px-16 lg:px-44">
+    <div className="flex min-h-screen w-full justify-center bg-pbdark-800 px-4  md:px-16 lg:px-44">
       <div className="mt-36 flex  h-fit  w-fit  flex-col rounded-lg border-2 border-border p-4">
         <div className="flex  flex-col gap-4  sm:flex-row">
-          {/** Planet image here */}
           <div
-            className=" relative mb-4  aspect-square h-[300px] w-[300px]
+            className=" relative mb-4  aspect-square md:h-[600px] md:w-[600px]
        rounded-2xl bg-pbneutral-500"
-          ></div>
+          >
+            {listingData?.data.planet.imageURL && (
+              <Image
+                src={listingData?.data.planet.imageURL}
+                alt=""
+                width={1024}
+                height={1024}
+                className="object-cover rounded-lg"
+              />
+            )}
+          </div>
 
           <div className="flex flex-col">
             <div className="flex w-[17rem] flex-row  justify-start gap-2 md:w-80">
@@ -80,6 +90,11 @@ export default function ListingPage() {
             ${
               listingData.data.planet.terrain === "DESERTS"
                 ? "text-yellow-400"
+                : ""
+            }
+            ${
+              listingData.data.planet.terrain === "PLAINS"
+                ? "text-green-300"
                 : ""
             }
             ${
@@ -220,7 +235,7 @@ export default function ListingPage() {
               isOptimistic
                 ? "pointer-events-none opacity-80"
                 : "pointer-events-auto opacity-100"
-            }  group flex w-fit cursor-pointer items-center rounded-md bg-pbprimary-500 p-2 transition-all hover:bg-red-500 `}
+            }  group flex w-fit cursor-pointer items-center rounded-md bg-pbprimary-100 p-2 transition-all hover:bg-red-500 `}
           >
             <p className="font-medium  text-white">Add to cart</p>
             <ShoppingBasket

@@ -10,6 +10,7 @@ import {
   PlanetTemperatureRange,
   PlanetTerrain,
 } from "@prisma/client";
+import { list } from "@vercel/blob";
 
 export const planetRouter = createTRPCRouter({
   getAllPlanets: publicProcedure
@@ -40,10 +41,7 @@ export const planetRouter = createTRPCRouter({
         cursor: z.object({ id: z.string() }).nullish(),
         filters: z
           .object({
-            planetName: z
-              .string()
-              .max(48, "Search string too long")
-              .optional(),
+            planetName: z.string().max(48, "Search string too long").optional(),
             planetTemperature: z
               .array(z.nativeEnum(PlanetTemperatureRange))
               .optional(),
@@ -77,6 +75,7 @@ export const planetRouter = createTRPCRouter({
       const items = await ctx.db.listing.findMany({
         take: limit + 1,
         cursor: cursor ? { id: cursor.id } : undefined,
+        orderBy: { listDate: "desc" },
         where: {
           listPrice: {
             gte: filters?.priceRange?.minPrice,
@@ -102,6 +101,7 @@ export const planetRouter = createTRPCRouter({
               temperature: true,
               terrain: true,
               listing: { select: { listDate: true, id: true } },
+              imageURL: true,
             },
           },
         },
@@ -139,6 +139,7 @@ export const planetRouter = createTRPCRouter({
               surfaceArea: true,
               temperature: true,
               terrain: true,
+              imageURL: true,
             },
           },
         },
@@ -202,6 +203,22 @@ export const planetRouter = createTRPCRouter({
           }
           const quality = qualityArray[qualityIdx];
 
+          // The path which we should look for blobs (images) in
+          let blobPath = `${temperature}/${terrain}`;
+
+          // If we generated a phenomenal planet, we should look for images in the phenomenal folder
+          if (quality === "PHENOMENAL") {
+            blobPath = `${PlanetQuality.PHENOMENAL}/${temperature}/${terrain}`;
+          }
+
+          // Get all images in the blob path
+          // These images all match the properties of the planet (temperature and terrain)
+          const { blobs } = await list({
+            prefix: `${blobPath}`,
+          });
+
+          console.log("Returned blobs", blobs);
+
           await ctx.db.planet.create({
             data: {
               name: generateRandomPlanetName(),
@@ -215,13 +232,15 @@ export const planetRouter = createTRPCRouter({
               quality: quality,
               temperature: temperature,
               terrain: terrain,
+              imageURL: blobs[Math.floor(Math.random() * blobs.length)]?.url,
               listing: {
                 create: {
                   listPrice: Math.round(
                     generateRandomNumberWithStdDev(
                       meanPlanetStats.valueMean,
                       stdDeviationPlanetStats.valueStdDev,
-                    ),
+                    ) *
+                      (qualityIdx + 1),
                   ),
                   listDate: new Date(),
                 },

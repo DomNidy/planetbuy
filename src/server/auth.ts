@@ -39,13 +39,6 @@ declare module "next-auth" {
 export const authOptions: NextAuthOptions = {
   callbacks: {
     session: async ({ session, token, user, newSession, trigger }) => {
-      console.log("-- Session callback --");
-      console.log("session", session);
-      console.log("token", token);
-      console.log("user", user);
-      console.log("new session", newSession);
-      console.log("trigger", trigger);
-
       // Lookup if the user is a guest
       // If the user is a guest, add it to their session
       const userData = await db.user.findUnique({

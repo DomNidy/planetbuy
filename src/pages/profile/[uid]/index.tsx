@@ -15,8 +15,8 @@ export default function ListingsPage() {
   }
 
   return (
-    <div className="bg-pbdark-800 flex min-h-screen w-full justify-center px-4 ">
-      <div className="mb-4 mt-4 flex w-full flex-col rounded-lg border-2 border-border p-4 sm:mt-36 sm:px-20">
+    <div className="flex min-h-screen w-full justify-center bg-pbdark-800 px-4 ">
+      <div className="mb-4 mt-12 flex w-full flex-col rounded-lg  p-4 sm:mt-36 sm:px-20">
         <div className="flex h-fit gap-4">
           <div className="h-60 w-60">
             {userProfile.data?.image ? (
@@ -28,44 +28,45 @@ export default function ListingsPage() {
                 className="rounded-full object-fill"
               />
             ) : (
-              <h2 className="bg-blue-200 object-fill text-4xl">
+              <h2 className="flex h-[240px] w-[240px] items-center justify-center rounded-full bg-pbprimary-100 object-fill text-4xl">
                 {userProfile.data.name?.toUpperCase().slice(0, 3)}
               </h2>
             )}
           </div>
           <div className="relative bottom-10 mt-2 flex flex-col self-center">
-            <h2 className=" text-2xl font-semibold text-pbtext-700">
+            <h2 className=" text-2xl font-semibold text-pbtext-500">
               {userProfile.data.name}
             </h2>
             <h3 className=" text-lg font-medium text-pbtext-700">
               Owns {userProfile.data.planets.length} planet(s)
             </h3>
-            <button className="mt-2 rounded-lg bg-pbprimary-500 py-2  text-lg font-semibold tracking-tight text-white hover:bg-pbprimary-700">
-              Follow
-            </button>
           </div>
         </div>
 
-        <div className="mt-16 flex h-full flex-col rounded-lg border border-border p-4">
-          <h2 className="text-2xl font-semibold text-pbtext-700">
+        <div className="mt-8 flex h-full flex-col rounded-lg  p-4">
+          <h2 className="text-2xl font-semibold text-pbtext-500">
             {userProfile.data.name}
             {"'s"} planets:
           </h2>
-          <div className="mt-2 grid h-full  w-full grid-cols-1 gap-8 overflow-x-scroll md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  2xl:grid-cols-5">
-            {/** Planet listing element here */}
+          {userProfile.data.planets?.length > 0 ? (
+            <div className="mt-2 grid h-full  w-full grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  2xl:grid-cols-5">
+              {/** Planet listing element here */}
 
-            {userProfile.data.planets.map((planet) => (
-              <PlanetCard
-                variant="showcase"
-                planetData={{
-                  planet: { ...planet, listing: null, owner: null },
-                  listPrice: 0,
-                  id: "",
-                }}
-                key={planet.id}
-              />
-            ))}
-          </div>
+              {userProfile.data.planets.map((planet) => (
+                <PlanetCard
+                  variant="showcase"
+                  planetData={{
+                    planet: { ...planet, listing: null, owner: null },
+                    listPrice: 0,
+                    id: "",
+                  }}
+                  key={planet.id}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-pbtext-700">This user owns no planets.</p>
+          )}
         </div>
       </div>
     </div>

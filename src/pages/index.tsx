@@ -21,17 +21,14 @@ export default function Home() {
     { getNextPageParam: (lastPage) => lastPage.nextCursor, staleTime: 30000 },
   );
 
-  // TODO: Potential problem
-  // TODO: Event listener might not be removed when we change pages?
-  // TODO: That's when the request spam starts
+  // TODO: Seems to cause request spam
   useEffect(() => {
     function handleScroll() {
       if (
         isScrolledToBottom(150) === true &&
-        allPlanets.isFetching === false &&
+        allPlanets.isFetchingNextPage === false &&
         allPlanets.hasNextPage === true
       ) {
-        console.log("fetching");
         void allPlanets.fetchNextPage();
       }
     }
@@ -70,7 +67,9 @@ export default function Home() {
           )}
           {/** If no page with items can be found, display "NO PLANETS FOUND" */}
           {allPlanets.data?.pages[0]?.items.length === 0 && (
-            <p className="text-2xl text-white text-center">No planets found...</p>
+            <p className="text-center text-2xl text-white">
+              No planets found...
+            </p>
           )}
           {allPlanets.isFetching && (
             <>
