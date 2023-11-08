@@ -46,14 +46,30 @@ model Planet {
     quality     PlanetQuality          @default(COMMON)
     temperature PlanetTemperatureRange @default(TEMPERATE)
     terrain     PlanetTerrain          @default(DESERTS)
-    imageURL    String?
 
     owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
     ownerId String?
 
     listing Listing?
 
+    planetImage   PlanetImage @relation(fields: [planetImageId], references: [id])
+    planetImageId String
+
     @@index([ownerId])
+    @@index([planetImageId])
+}
+
+model PlanetImage {
+    id          String                 @id @unique @default(cuid())
+    bucketPath  String                 @unique
+    eTag        String                 @unique
+    temperature PlanetTemperatureRange
+    terrain     PlanetTerrain
+    quality     PlanetQuality          @default(COMMON)
+
+    assosciatedPlanets Planet[]
+
+    @@index([temperature, terrain])
 }
 
 model Listing {

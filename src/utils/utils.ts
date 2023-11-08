@@ -1,7 +1,11 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { planetImagePropertiesSchema } from "./schemas";
-import { PlanetTemperatureRange, PlanetTerrain } from "@prisma/client";
+import { type planetImagePropertiesSchema } from "./schemas";
+import {
+  type PlanetQuality,
+  PlanetTemperatureRange,
+  PlanetTerrain,
+} from "@prisma/client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -195,11 +199,20 @@ export function generateRandomPlanetName(): string {
 
     const randomOption = Math.floor(Math.random() * 3);
     if (randomOption === 0) {
-      planetName = prefixes[Math.floor(Math.random() * prefixes.length)] + " " + planetName;
+      planetName =
+        prefixes[Math.floor(Math.random() * prefixes.length)] +
+        " " +
+        planetName;
     } else if (randomOption === 1) {
-      planetName = planetName + " " + suffixes[Math.floor(Math.random() * suffixes.length)];
+      planetName =
+        planetName +
+        " " +
+        suffixes[Math.floor(Math.random() * suffixes.length)];
     } else {
-      planetName = compoundWords[Math.floor(Math.random() * compoundWords.length)] + " " + planetName;
+      planetName =
+        compoundWords[Math.floor(Math.random() * compoundWords.length)] +
+        " " +
+        planetName;
     }
   }
 
@@ -211,12 +224,13 @@ export function parsePlanetImagePropertiesFromFilename(
 ): Zod.infer<typeof planetImagePropertiesSchema> | undefined {
   // Parse planet image properties from filename
   const parsedImagePropertiesFromFileName: string[] = filename
-    .replace(".jpg", "")
+    .replaceAll(/([0-9]+)|[ /]|planet-images|\..*/g, " ")
     .split(" ");
 
   // Declare variables which will corespond to the image properties once we finish parsing them from the file name
   let planetTemperature: PlanetTemperatureRange | undefined;
   let planetTerrain: PlanetTerrain | undefined;
+  let planetQuality: PlanetQuality = "COMMON";
 
   // Parse the temperature property string from image props
   for (const prop of parsedImagePropertiesFromFileName) {
@@ -242,10 +256,21 @@ export function parsePlanetImagePropertiesFromFilename(
     }
   }
 
+  // Parse the quality property string from image props
+  // Currently we only care if PHENOMENAL is in the parsed properties array
+  // If we do not find PHENOMENAL, just return COMMON
+  for (const prop of parsedImagePropertiesFromFileName) {
+    if (prop === "PHENOMENAL") {
+      planetQuality = "PHENOMENAL";
+      break;
+    }
+  }
+
   if (planetTemperature && planetTerrain) {
     return {
       planetTemperature: planetTemperature,
       planetTerrain: planetTerrain,
+      planetQuality: planetQuality,
     };
   }
 

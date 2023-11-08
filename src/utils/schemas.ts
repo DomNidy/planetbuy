@@ -1,4 +1,8 @@
-import { PlanetTemperatureRange, PlanetTerrain } from "@prisma/client";
+import {
+  PlanetQuality,
+  PlanetTemperatureRange,
+  PlanetTerrain,
+} from "@prisma/client";
 import { z } from "zod";
 
 export const guestNameSchema = z
@@ -9,4 +13,5 @@ export const guestNameSchema = z
 export const planetImagePropertiesSchema = z.object({
   planetTemperature: z.nativeEnum(PlanetTemperatureRange),
   planetTerrain: z.nativeEnum(PlanetTerrain),
+  planetQuality: z.nativeEnum(PlanetQuality),
 });

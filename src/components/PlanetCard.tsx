@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useContext, useState } from "react";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
+import { env } from "~/env.mjs";
 import { getBaseUrl, type RouterOutputs } from "~/utils/api";
 import {
   formatLargeNumberToString,
@@ -36,12 +37,13 @@ export default function PlanetCard({
         className=" relative mb-4  aspect-square
        rounded-2xl bg-pbneutral-500"
       >
-        {planetData?.planet?.imageURL && (
+        {planetData?.planet?.planetImage.bucketPath && (
           <Image
-            src={planetData.planet.imageURL}
+            src={`${env.NEXT_PUBLIC_LB_FRONTEND_URL}/${planetData?.planet?.planetImage.bucketPath}`}
             alt=""
-            width={1024}
-            height={1024}
+            priority
+            quality={75}
+            fill
           />
         )}
         {planetData.planet.listing?.id &&
@@ -76,7 +78,7 @@ export default function PlanetCard({
             {!isUserOwner && variant === "listing" ? (
               <>
                 <ShoppingCartIcon
-                  color="#494949"
+                  color="white"
                   onClick={() => {
                     // Add item to card if the listing assosciated with this planet has an id
                     if (planetData && !isOptimistic) {

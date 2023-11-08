@@ -17,6 +17,7 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    CRON_SECRET: z.string().min(44, "Secret is too short"),
     GITHUB_SECRET: z.string(),
     GITHUB_ID: z.string(),
     NEXTAUTH_SECRET:
@@ -35,7 +36,7 @@ export const env = createEnv({
     MIN_LISTING_PRICE: z.number(),
     MAX_LISTING_PRICE: z.number(),
     MIN_SURFACE_AREA: z.number(),
-    MAX_SURFACE_AREA: z.number()
+    MAX_SURFACE_AREA: z.number(),
   },
 
   /**
@@ -45,6 +46,8 @@ export const env = createEnv({
    */
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
+    NEXT_PUBLIC_LB_FRONTEND_URL: z.string()
+
   },
 
   /**
@@ -54,12 +57,17 @@ export const env = createEnv({
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
+    CRON_SECRET: process.env.CRON_SECRET,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     GITHUB_SECRET: process.env.GITHUB_SECRET,
     GITHUB_ID: process.env.GITHUB_ID,
     DISCORD_ID: process.env.DISCORD_ID,
     DISCORD_SECRET: process.env.DISCORD_SECRET,
+
+    // Url to load balance from end for image cdn
+    NEXT_PUBLIC_LB_FRONTEND_URL: process.env.NEXT_PUBLIC_LB_FRONTEND_URL,
+
 
     // Store configuration
 

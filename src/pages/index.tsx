@@ -15,7 +15,7 @@ export default function Home() {
   //* Planet listing infinite scroll code
   const allPlanets = api.planet.getAllPurchasablePlanets.useInfiniteQuery(
     {
-      limit: 10,
+      limit: 25,
       filters: filters,
     },
     { getNextPageParam: (lastPage) => lastPage.nextCursor, staleTime: 30000 },

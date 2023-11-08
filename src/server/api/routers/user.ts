@@ -190,68 +190,10 @@ export const userRouter = createTRPCRouter({
               temperature: true,
               terrain: true,
               listing: { select: { listDate: true, id: true } },
-              imageURL: true,
+              planetImage: { select: { bucketPath: true } },
             },
           },
           image: true,
-        },
-      });
-    }),
-  createPlanetCard: protectedProcedure
-    .input(
-      z.object({
-        name: z
-          .string()
-          .min(3, "Planet name must be at least 3 characters long")
-          .max(48, "Planet name cannot exceed 48 characters"),
-        listPrice: z.coerce
-          .number()
-          .min(100, "Listing price must be at least 100")
-          .max(
-            100_000_000_000_000,
-            "Listing price cannot exceed 100,000,000,000,000",
-          ),
-        surfaceArea: z.coerce
-          .number()
-          .min(1, "Surface must be greater than 1 square km.")
-          .max(
-            100_000_000_000_000,
-            "Maximum surface area size cannot exceed 100,000,000,000,000 square km.",
-          ),
-        discoveryDate: z.coerce.date().refine(
-          (date) => {
-            // If the discovery date is in the future, fail
-            // (We are adding 100 seconds to the time here because we use the same schema on the serverside,
-            //  and if we submit a request on the client, it might take a few extra seconds to process, causing the client
-            //  side validation to succeeed, but the server side one to fail as there is latency which might cause
-            //  the input date to be interpreted as being in the future, however at the time of submission it was not)
-            if (Date.now() + 100000 < date.getTime()) {
-              return false;
-            }
-            return true;
-          },
-          { message: "Date must not be in the future." },
-        ),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      // Create the planet object from input data
-      const planet = await ctx.db.planet.create({
-        data: {
-          name: input.name,
-          surfaceArea: input.surfaceArea,
-          discoveryDate: input.discoveryDate,
-          // Connect this planet to the owner
-          owner: {
-            connect: { id: ctx.session.user.id },
-          },
-        },
-      });
-
-      await ctx.db.listing.create({
-        data: {
-          planet: { connect: { id: planet.id } },
-          listPrice: input.listPrice,
         },
       });
     }),

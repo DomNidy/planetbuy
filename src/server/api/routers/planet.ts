@@ -10,7 +10,6 @@ import {
   PlanetTemperatureRange,
   PlanetTerrain,
 } from "@prisma/client";
-import { list } from "@vercel/blob";
 
 export const planetRouter = createTRPCRouter({
   getAllPlanets: publicProcedure
@@ -101,7 +100,7 @@ export const planetRouter = createTRPCRouter({
               temperature: true,
               terrain: true,
               listing: { select: { listDate: true, id: true } },
-              imageURL: true,
+              planetImage: { select: { bucketPath: true } },
             },
           },
         },
@@ -139,7 +138,9 @@ export const planetRouter = createTRPCRouter({
               surfaceArea: true,
               temperature: true,
               terrain: true,
-              imageURL: true,
+              planetImage: {
+                select: { bucketPath: true },
+              },
             },
           },
         },
@@ -187,11 +188,11 @@ export const planetRouter = createTRPCRouter({
           const temperature =
             temperatureArray[
               Math.floor(Math.random() * temperatureArray.length)
-            ];
+            ]!;
 
           const terrainArray = Object.values(PlanetTerrain);
           const terrain =
-            terrainArray[Math.floor(Math.random() * terrainArray.length)];
+            terrainArray[Math.floor(Math.random() * terrainArray.length)]!;
 
           // Randomly generated numbers must be greater than qualityProbability in order to increment planet quality
           // Increasing qualityProbability will decrease the probability of higher quality planets being chosen
@@ -201,23 +202,25 @@ export const planetRouter = createTRPCRouter({
           while (Math.random() > qualityProbability && qualityIdx < 4) {
             qualityIdx += 1;
           }
-          const quality = qualityArray[qualityIdx];
+          const quality = qualityArray[qualityIdx]!;
 
-          // The path which we should look for blobs (images) in
-          let blobPath = `${temperature}/${terrain}`;
+          // Find an image which matches the properties of the generated planet
 
-          // If we generated a phenomenal planet, we should look for images in the phenomenal folder
-          if (quality === "PHENOMENAL") {
-            blobPath = `${PlanetQuality.PHENOMENAL}/${temperature}/${terrain}`;
-          }
-
-          // Get all images in the blob path
-          // These images all match the properties of the planet (temperature and terrain)
-          const { blobs } = await list({
-            prefix: `${blobPath}`,
+          const planetImage = await ctx.db.planetImage.findFirst({
+            where: {
+              // Find a planet image that matches the quality
+              // If generated planets quality is not phenomenal, look for a common quality image instead
+              quality: {
+                equals: quality === "PHENOMENAL" ? "PHENOMENAL" : "COMMON",
+              },
+              temperature: { equals: temperature },
+              terrain: { equals: terrain },
+            },
+            orderBy: { assosciatedPlanets: { _count: "asc" } },
+            select: { id: true },
           });
 
-          console.log("Returned blobs", blobs);
+          console.log(planetImage, "im");
 
           await ctx.db.planet.create({
             data: {
@@ -232,7 +235,7 @@ export const planetRouter = createTRPCRouter({
               quality: quality,
               temperature: temperature,
               terrain: terrain,
-              imageURL: blobs[Math.floor(Math.random() * blobs.length)]?.url,
+              planetImage: { connect: { id: planetImage?.id } },
               listing: {
                 create: {
                   listPrice: Math.round(
