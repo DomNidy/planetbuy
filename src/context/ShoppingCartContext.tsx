@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { type SetStateAction, createContext } from "react";
 import { useToast } from "~/components/ui/use-toast";
-import { type RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api, getBaseUrl } from "~/utils/api";
 
 type CartCTX = {
   cart?: RouterOutputs["user"]["getCartItems"];
@@ -132,7 +132,7 @@ export default function ShoppingCartProvider({
     setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
   ) => {
     if (session.status === "unauthenticated") {
-      router.push("http://localhost:3000/api/auth/signin");
+      router.push(`${getBaseUrl()}/api/auth/signin`);
     }
 
     if (!planetData?.planet?.listing?.id) {
