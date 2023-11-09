@@ -1,28 +1,34 @@
-# Create T3 App
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+# Planetbuy
 
-## What's next? How do I make an app with this?
+ [**Planetbuy**](https://planetbuy.vercel.app/) is a full-stack app developed within the NextJS framework. It designed to implement functionality similar to real-estate platforms like [*airbnb*](https://www.airbnb.com/). However, as the same suggests; on Planetbuy you are "buying planets" *(fictional planets, with fictional currency)*. This app is entirely for **learning purposes**.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+  
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Features
+The table below contains the features Planetbuy plans to implement, and the status of their implementation. 
+
+| Feature | Status |
+|--|--|
+| Create an account |✔️|
+| Create a guest account |✔️|
+| Purchase a planet |✔️|
+| Advanced querying & filtering for planet listings |🚧|
+| Re-list purchased planets on the marketplace |🚧|
+| View prior transaction history |❌|
+
+- ✔️ indicates a feature has been fully implemented.
+- ❌ indicates implementation of a feature has not yet begun.
+- 🚧 indicates a feature is in the process of being implemented.
+
+## Tech used
 
 - [Next.js](https://nextjs.org)
 - [NextAuth.js](https://next-auth.js.org)
 - [Prisma](https://prisma.io)
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
+- [Google Cloud Buckets](https://cloud.google.com)
+- [PlanetScale](https://planetscale.com/)
+  
 
-## Learn More
-
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
-
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
-
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
