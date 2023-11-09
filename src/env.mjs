@@ -46,7 +46,7 @@ export const env = createEnv({
    */
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
-    NEXT_PUBLIC_LB_FRONTEND_URL: z.string()
+    NEXT_PUBLIC_BUCKET_URL: z.string()
 
   },
 
@@ -65,9 +65,10 @@ export const env = createEnv({
     DISCORD_ID: process.env.DISCORD_ID,
     DISCORD_SECRET: process.env.DISCORD_SECRET,
 
-    // Url to load balance from end for image cdn
-    NEXT_PUBLIC_LB_FRONTEND_URL: process.env.NEXT_PUBLIC_LB_FRONTEND_URL,
+    // Url to  image bucket
 
+    NEXT_PUBLIC_BUCKET_URL: process.env.NEXT_PUBLIC_BUCKET_URL,
+    
 
     // Store configuration
 

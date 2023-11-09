@@ -17,20 +17,20 @@ export default async function blobs(
     return;
   }
 
-  // Request load balancer front end (which points to our cdn)
-  const lbResponse = await fetch(env.NEXT_PUBLIC_LB_FRONTEND_URL, {
+  // Request our bucket
+  const lbResponse = await fetch(env.NEXT_PUBLIC_BUCKET_URL, {
     method: "GET",
     headers: {
       "Content-Type": "application/xml",
     },
   });
 
-  // Create an XML parser to parse the data received from lb
+  // Create an XML parser to parse the data received from bucket
   const parser = new XMLParser();
 
   try {
     // Parse the xml data
-    // The type definition here matches the response of the lb
+    // The type definition here matches the response of the bucket
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const parsedXML: {
       ListBucketResult: {
@@ -58,7 +58,7 @@ export default async function blobs(
       );
 
       console.log(
-        "Parsed image data from CDN",
+        "Parsed image data from bucket",
         parsedImageProperties,
         `from ${content.Key}`,
       );
@@ -73,7 +73,6 @@ export default async function blobs(
     });
 
     // Create planetImage records in the database
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     await db.planetImage.createMany({
       data: planetImageMetadatas,
       skipDuplicates: true,

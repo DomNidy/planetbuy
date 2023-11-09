@@ -35,15 +35,18 @@ export default function PlanetCard({
 
       <div
         className=" relative mb-4  aspect-square
-       rounded-2xl bg-pbneutral-500"
+       rounded-2xl "
       >
         {planetData?.planet?.planetImage.bucketPath && (
           <Image
-            src={`${env.NEXT_PUBLIC_LB_FRONTEND_URL}/${planetData?.planet?.planetImage.bucketPath}`}
+            src={`${env.NEXT_PUBLIC_BUCKET_URL}/${planetData?.planet?.planetImage.bucketPath}`}
             alt=""
             priority
             quality={75}
-            fill
+            blurDataURL={`${env.NEXT_PUBLIC_BUCKET_URL}/${planetData?.planet?.planetImage.bucketPath}`}
+            placeholder="blur"
+            width={1024}
+            height={1024}
           />
         )}
         {planetData.planet.listing?.id &&

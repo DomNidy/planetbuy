@@ -39,12 +39,15 @@ export default function ListingPage() {
           >
             {listingData?.data.planet.planetImage && (
               <Image
-                src={`${env.NEXT_PUBLIC_LB_FRONTEND_URL}/${listingData?.data.planet.planetImage.bucketPath}`}
+                src={`${env.NEXT_PUBLIC_BUCKET_URL}/${listingData?.data.planet.planetImage.bucketPath}`}
+                placeholder="blur"
+                blurDataURL={`${env.NEXT_PUBLIC_BUCKET_URL}/${listingData?.data.planet.planetImage.bucketPath}`}
                 alt=""
                 width={1024}
                 height={1024}
                 className="rounded-lg object-cover"
                 quality={100}
+                priority
               />
             )}
           </div>
