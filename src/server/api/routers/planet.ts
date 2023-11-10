@@ -66,6 +66,30 @@ export const planetRouter = createTRPCRouter({
                 { message: "Min price must be less than the max price" },
               )
               .optional(),
+            surfaceAreaRange: z
+              .object({
+                minSurfaceArea: z
+                  .number()
+                  .min(env.MIN_SURFACE_AREA)
+                  .max(env.MAX_SURFACE_AREA),
+                maxSurfaceArea: z
+                  .number()
+                  .min(env.MIN_SURFACE_AREA)
+                  .max(env.MAX_SURFACE_AREA),
+              })
+              .refine(
+                (areas) => {
+                  if (areas.minSurfaceArea > areas.maxSurfaceArea) {
+                    return false;
+                  }
+                  return true;
+                },
+                {
+                  message:
+                    "Min surface area must be less than the max surface area.",
+                },
+              )
+              .optional(),
           })
           .optional(),
       }),
@@ -81,6 +105,10 @@ export const planetRouter = createTRPCRouter({
             lte: filters?.priceRange?.maxPrice,
           },
           planet: {
+            surfaceArea: {
+              gte: filters?.surfaceAreaRange?.minSurfaceArea,
+              lte: filters?.surfaceAreaRange?.maxSurfaceArea,
+            },
             quality: { in: filters?.planetQuality },
             temperature: { in: filters?.planetTemperature },
             name: { startsWith: filters?.planetName },

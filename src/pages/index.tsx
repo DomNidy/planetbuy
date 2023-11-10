@@ -6,23 +6,28 @@ import { useEffect, useState } from "react";
 import { isScrolledToBottom } from "~/utils/utils";
 import PlanetCardSkeleton from "~/components/PlanetCardSkeleton";
 import { type RouterInputs } from "~/utils/api";
+import { now } from "next-auth/client/_utils";
+import { useDebounce } from "@uidotdev/usehooks";
 
 export default function Home() {
   const [filters, setFilters] = useState<
     RouterInputs["planet"]["getAllPurchasablePlanets"]["filters"]
   >({});
 
+  // 
+  const debouncedFilters = useDebounce(filters, 500);
+
   //* Planet listing infinite scroll code
   const allPlanets = api.planet.getAllPurchasablePlanets.useInfiniteQuery(
     {
       limit: 25,
-      filters: filters,
+      filters: debouncedFilters,
     },
     { getNextPageParam: (lastPage) => lastPage.nextCursor, staleTime: 30000 },
   );
 
-  // TODO: Seems to cause request spam
   useEffect(() => {
+    console.log("ran index eff");
     function handleScroll() {
       if (
         isScrolledToBottom(150) === true &&
@@ -38,6 +43,8 @@ export default function Home() {
       window.removeEventListener("scroll", handleScroll);
     };
   });
+
+  useEffect(() => console.log("Filters changed", filters, now()), [filters]);
 
   return (
     <>

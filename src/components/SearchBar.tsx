@@ -1,18 +1,17 @@
-import { Filter, FilterX } from "lucide-react";
+import { Filter } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { RouterInputs, api } from "~/utils/api";
+import { type RouterInputs } from "~/utils/api";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { Slider } from "./ui/slider";
-import { Dispatch, SetStateAction } from "react";
-import { SliderThumb } from "@radix-ui/react-slider";
+import { type Dispatch, type SetStateAction } from "react";
+import { PriceRangeSlider } from "./PriceRangeSlider";
+import { SurfaceAreaRangeSlider } from "./SurfaceAreaRangeSlider";
 
 export default function SearchBar({
   filters,
@@ -56,19 +55,41 @@ export default function SearchBar({
                 Filters
               </DialogTitle>
             </DialogHeader>
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-16">
               <div className="flex flex-col">
                 <h2 className="mb-4 font-semibold tracking-tight">
                   Price Range
                 </h2>
-                <Slider
-                  onPointerUp={(e) => console.log(e)}
+                <PriceRangeSlider
+                  filters={filters}
+                  setFilters={setFilters}
                   step={100_000}
                   minStepsBetweenThumbs={1}
-                  defaultValue={[100_000, 5_000_000]}
+                  defaultValue={[
+                    filters?.priceRange?.minPrice ?? 100_000,
+                    filters?.priceRange?.maxPrice ?? 5_000_000,
+                  ]}
                   max={5_000_000}
                   min={100}
-                ></Slider>
+                ></PriceRangeSlider>
+              </div>
+
+              <div className="flex flex-col">
+                <h2 className="mb-4 font-semibold tracking-tight">
+                  Surface Area
+                </h2>
+                <SurfaceAreaRangeSlider
+                  filters={filters}
+                  setFilters={setFilters}
+                  step={1_000_000}
+                  minStepsBetweenThumbs={1}
+                  defaultValue={[
+                    filters?.surfaceAreaRange?.minSurfaceArea ?? 0,
+                    filters?.surfaceAreaRange?.maxSurfaceArea ?? 250_000_000,
+                  ]}
+                  max={250_000_000}
+                  min={100}
+                ></SurfaceAreaRangeSlider>
               </div>
             </div>
           </DialogContent>
