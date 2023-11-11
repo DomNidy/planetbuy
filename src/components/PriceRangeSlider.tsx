@@ -5,6 +5,7 @@ import * as SliderPrimitive from "@radix-ui/react-slider";
 
 import { cn, formatNumberToStringWithCommas } from "~/utils/utils";
 import { type RouterInputs } from "~/utils/api";
+import { env } from "~/env.mjs";
 
 const PriceRangeSlider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
@@ -52,7 +53,10 @@ const PriceRangeSlider = React.forwardRef<
         >
           <p className="font-semibold text-pbprimary-100">
             $
-            {formatNumberToStringWithCommas(filters?.priceRange?.minPrice ?? 0)}
+            {formatNumberToStringWithCommas(
+              filters?.priceRange?.minPrice ??
+                env.NEXT_PUBLIC_MAX_LISTING_PRICE,
+            )}
           </p>
         </div>
       </SliderPrimitive.Thumb>
@@ -64,7 +68,8 @@ const PriceRangeSlider = React.forwardRef<
           <p className="font-semibold text-pbprimary-100">
             $
             {formatNumberToStringWithCommas(
-              filters?.priceRange?.maxPrice ?? 5_000_000,
+              filters?.priceRange?.maxPrice ??
+                env.NEXT_PUBLIC_MAX_LISTING_PRICE,
             )}
           </p>
         </div>
