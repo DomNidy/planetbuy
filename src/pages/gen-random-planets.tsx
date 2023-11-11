@@ -14,6 +14,7 @@ import {
 import { formatLargeNumberToString } from "~/utils/utils";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
+import { env } from "~/env.mjs";
 
 const generatePlanetsFormSchema = z.object({
   planetsToGenerate: z.coerce
@@ -25,13 +26,25 @@ const generatePlanetsFormSchema = z.object({
   // (ex: std dev of 10000 for value produces a planet value of 234_000_000_000_000, which exceeds value cap)
   // The stats of this planet will be scaled down accordingly
   stdDeviationPlanetStats: z.object({
-    valueStdDev: z.coerce.number().min(0).max(100_000_000_000),
-    surfaceAreaStdDev: z.coerce.number().min(0).max(100_000_000_000),
+    valueStdDev: z.coerce
+      .number()
+      .min(env.NEXT_PUBLIC_MIN_LISTING_PRICE)
+      .max(env.NEXT_PUBLIC_MAX_LISTING_PRICE),
+    surfaceAreaStdDev: z.coerce
+      .number()
+      .min(env.NEXT_PUBLIC_MIN_SURFACE_AREA)
+      .max(env.NEXT_PUBLIC_MAX_SURFACE_AREA),
   }),
   // The mean that the randomly generated planet stats will vary about
   meanPlanetStats: z.object({
-    valueMean: z.coerce.number().min(100).max(100_000_000_000),
-    surfaceAreaMean: z.coerce.number().min(100).max(100_000_000_000),
+    valueMean: z.coerce
+      .number()
+      .min(env.NEXT_PUBLIC_MIN_LISTING_PRICE)
+      .max(env.NEXT_PUBLIC_MAX_LISTING_PRICE),
+    surfaceAreaMean: z.coerce
+      .number()
+      .min(env.NEXT_PUBLIC_MIN_SURFACE_AREA)
+      .max(env.NEXT_PUBLIC_MAX_SURFACE_AREA),
   }),
 });
 
@@ -54,12 +67,12 @@ export default function GenerateRandom() {
     generateRandomPlanets.mutate(values);
   }
   return (
-    <div >
+    <div>
       <Form {...form}>
         <form
           // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onSubmit={form.handleSubmit(onSubmit)}
-          className="ml-10 pt-32 w-[500px] space-y-4"
+          className="ml-10 w-[500px] space-y-4 pt-32"
         >
           <FormField
             control={form.control}

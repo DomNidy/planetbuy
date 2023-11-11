@@ -276,3 +276,28 @@ export function parsePlanetImagePropertiesFromFilename(
 
   return undefined;
 }
+
+/**
+ * Return a number clamped between min and max
+ *
+ * - If num exceeds max, returns max
+ *
+ * - If num is lesser than min, returns min
+ *
+ * - If num is greater than min and lesser than max, returns num
+ *
+ * Examples:
+ *
+ * `clampNumber(10, 1, 100) -> 10`
+ *
+ * `clampNumber(10, 25, 50) -> 25`
+ *
+ * `clampNumber(100, 25, 50) -> 50`
+ *
+ * @returns {any}
+ */
+export function clampNumber(num: number, min: number, max: number) {
+  console.log(`Clamping number ${num} between min of ${min} and max of ${max}`);
+  console.log(`Clamp result ${Math.min(Math.max(num, min), max)}`);
+  return Math.min(Math.max(num, min), max);
+}

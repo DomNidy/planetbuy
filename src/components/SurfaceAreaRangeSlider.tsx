@@ -3,12 +3,9 @@
 import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 
-import {
-  cn,
-  formatLargeNumberToString,
-  formatNumberToStringWithCommas,
-} from "~/utils/utils";
+import { cn, formatLargeNumberToString } from "~/utils/utils";
 import { type RouterInputs } from "~/utils/api";
+import { env } from "~/env.mjs";
 
 const SurfaceAreaRangeSlider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
@@ -58,7 +55,8 @@ const SurfaceAreaRangeSlider = React.forwardRef<
         >
           <p className="font-semibold text-pbprimary-100">
             {formatLargeNumberToString(
-              filters?.surfaceAreaRange?.minSurfaceArea ?? 0,
+              filters?.surfaceAreaRange?.minSurfaceArea ??
+                env.NEXT_PUBLIC_MIN_SURFACE_AREA,
             )}
             <sup>2</sup> km
           </p>
@@ -71,7 +69,8 @@ const SurfaceAreaRangeSlider = React.forwardRef<
         >
           <p className="font-semibold text-pbprimary-100">
             {formatLargeNumberToString(
-              filters?.surfaceAreaRange?.maxSurfaceArea ?? 250_000_000,
+              filters?.surfaceAreaRange?.maxSurfaceArea ??
+                env.NEXT_PUBLIC_MAX_SURFACE_AREA,
             )}
             <sup>2</sup> km
           </p>

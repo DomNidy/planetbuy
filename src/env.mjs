@@ -33,10 +33,7 @@ export const env = createEnv({
     ),
     DISCORD_SECRET: z.string(),
     DISCORD_ID: z.string(),
-    MIN_LISTING_PRICE: z.number(),
-    MAX_LISTING_PRICE: z.number(),
-    MIN_SURFACE_AREA: z.number(),
-    MAX_SURFACE_AREA: z.number(),
+
   },
 
   /**
@@ -45,9 +42,13 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
-    NEXT_PUBLIC_BUCKET_URL: z.string()
+    NEXT_PUBLIC_BUCKET_URL: z.string(),
 
+    //* Store configuration vars
+    NEXT_PUBLIC_MIN_LISTING_PRICE: z.number(),
+    NEXT_PUBLIC_MAX_LISTING_PRICE: z.number(),
+    NEXT_PUBLIC_MIN_SURFACE_AREA: z.number(),
+    NEXT_PUBLIC_MAX_SURFACE_AREA: z.number(),
   },
 
   /**
@@ -65,22 +66,20 @@ export const env = createEnv({
     DISCORD_ID: process.env.DISCORD_ID,
     DISCORD_SECRET: process.env.DISCORD_SECRET,
 
-    // Url to  image bucket
-
+    // Url to image bucket
     NEXT_PUBLIC_BUCKET_URL: process.env.NEXT_PUBLIC_BUCKET_URL,
-    
 
-    // Store configuration
+
+    //* Store configuration
 
     // Minimum price an item can be listed for
-    MIN_LISTING_PRICE: process.env.MIN_LISTING_PRICE ? parseFloat(process.env.MIN_LISTING_PRICE.replace(/_/g, '')) : 100,
+    NEXT_PUBLIC_MIN_LISTING_PRICE: process.env.NEXT_PUBLIC_MIN_LISTING_PRICE ? parseFloat(process.env.NEXT_PUBLIC_MIN_LISTING_PRICE.replace(/_/g, '')) : 100,
     // Maximum price an item can be listing for
-    MAX_LISTING_PRICE: process.env.MAX_LISTING_PRICE ? parseFloat(process.env.MAX_LISTING_PRICE.replace(/_/g, '')) : 100_000_000_000_000,
+    NEXT_PUBLIC_MAX_LISTING_PRICE: process.env.NEXT_PUBLIC_MAX_LISTING_PRICE ? parseFloat(process.env.NEXT_PUBLIC_MAX_LISTING_PRICE.replace(/_/g, '')) : 100_000_000_000_000,
     // Minimum surface area of a planet
-    MIN_SURFACE_AREA: process.env.MIN_SURFACE_AREA ? parseFloat(process.env.MIN_SURFACE_AREA.replace(/_/g, '')) : 1,
+    NEXT_PUBLIC_MIN_SURFACE_AREA: process.env.NEXT_PUBLIC_MIN_SURFACE_AREA ? parseFloat(process.env.NEXT_PUBLIC_MIN_SURFACE_AREA.replace(/_/g, '')) : 1,
     // Maximum surface area of a planet
-    MAX_SURFACE_AREA: process.env.MAX_SURFACE_AREA ? parseFloat(process.env.MAX_SURFACE_AREA.replace(/_/g, '')) : 100_000_000_000_000
-    // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+    NEXT_PUBLIC_MAX_SURFACE_AREA: process.env.NEXT_PUBLIC_MAX_SURFACE_AREA ? parseFloat(process.env.NEXT_PUBLIC_MAX_SURFACE_AREA.replace(/_/g, '')) : 100_000_000_000_000
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

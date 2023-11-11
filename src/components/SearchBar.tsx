@@ -12,6 +12,7 @@ import {
 import { type Dispatch, type SetStateAction } from "react";
 import { PriceRangeSlider } from "./PriceRangeSlider";
 import { SurfaceAreaRangeSlider } from "./SurfaceAreaRangeSlider";
+import { env } from "~/env.mjs";
 
 export default function SearchBar({
   filters,
@@ -63,14 +64,20 @@ export default function SearchBar({
                 <PriceRangeSlider
                   filters={filters}
                   setFilters={setFilters}
-                  step={100_000}
+                  step={Math.round(
+                    (env.NEXT_PUBLIC_MAX_LISTING_PRICE -
+                      env.NEXT_PUBLIC_MIN_LISTING_PRICE) /
+                      250,
+                  )}
                   minStepsBetweenThumbs={1}
                   defaultValue={[
-                    filters?.priceRange?.minPrice ?? 100_000,
-                    filters?.priceRange?.maxPrice ?? 5_000_000,
+                    filters?.priceRange?.minPrice ??
+                      env.NEXT_PUBLIC_MIN_LISTING_PRICE,
+                    filters?.priceRange?.maxPrice ??
+                      env.NEXT_PUBLIC_MAX_LISTING_PRICE,
                   ]}
-                  max={5_000_000}
-                  min={100}
+                  max={env.NEXT_PUBLIC_MAX_LISTING_PRICE}
+                  min={env.NEXT_PUBLIC_MIN_LISTING_PRICE}
                 ></PriceRangeSlider>
               </div>
 
@@ -81,16 +88,28 @@ export default function SearchBar({
                 <SurfaceAreaRangeSlider
                   filters={filters}
                   setFilters={setFilters}
-                  step={1_000_000}
+                  step={
+                    (env.NEXT_PUBLIC_MAX_SURFACE_AREA -
+                      env.NEXT_PUBLIC_MIN_SURFACE_AREA) /
+                    100
+                  }
                   minStepsBetweenThumbs={1}
                   defaultValue={[
-                    filters?.surfaceAreaRange?.minSurfaceArea ?? 0,
-                    filters?.surfaceAreaRange?.maxSurfaceArea ?? 250_000_000,
+                    filters?.surfaceAreaRange?.minSurfaceArea ??
+                      env.NEXT_PUBLIC_MIN_SURFACE_AREA,
+                    filters?.surfaceAreaRange?.maxSurfaceArea ??
+                      env.NEXT_PUBLIC_MAX_SURFACE_AREA,
                   ]}
-                  max={250_000_000}
-                  min={100}
+                  max={env.NEXT_PUBLIC_MAX_SURFACE_AREA}
+                  min={env.NEXT_PUBLIC_MIN_SURFACE_AREA}
                 ></SurfaceAreaRangeSlider>
               </div>
+              <h2
+                className="mt-4 cursor-pointer text-lg font-semibold text-pbdark-800 underline"
+                onClick={() => setFilters({})}
+              >
+                Clear filters
+              </h2>
             </div>
           </DialogContent>
         </Dialog>

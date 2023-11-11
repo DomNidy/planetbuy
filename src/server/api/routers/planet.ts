@@ -2,6 +2,7 @@ import { env } from "~/env.mjs";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { z } from "zod";
 import {
+  clampNumber,
   generateRandomNumberWithStdDev,
   generateRandomPlanetName,
 } from "~/utils/utils";
@@ -49,12 +50,12 @@ export const planetRouter = createTRPCRouter({
               .object({
                 minPrice: z
                   .number()
-                  .min(env.MIN_LISTING_PRICE)
-                  .max(env.MAX_LISTING_PRICE),
+                  .min(env.NEXT_PUBLIC_MIN_LISTING_PRICE)
+                  .max(env.NEXT_PUBLIC_MAX_LISTING_PRICE),
                 maxPrice: z
                   .number()
-                  .min(env.MIN_LISTING_PRICE)
-                  .max(env.MAX_LISTING_PRICE),
+                  .min(env.NEXT_PUBLIC_MIN_LISTING_PRICE)
+                  .max(env.NEXT_PUBLIC_MAX_LISTING_PRICE),
               })
               .refine(
                 (prices) => {
@@ -70,12 +71,12 @@ export const planetRouter = createTRPCRouter({
               .object({
                 minSurfaceArea: z
                   .number()
-                  .min(env.MIN_SURFACE_AREA)
-                  .max(env.MAX_SURFACE_AREA),
+                  .min(env.NEXT_PUBLIC_MIN_SURFACE_AREA)
+                  .max(env.NEXT_PUBLIC_MAX_SURFACE_AREA),
                 maxSurfaceArea: z
                   .number()
-                  .min(env.MIN_SURFACE_AREA)
-                  .max(env.MAX_SURFACE_AREA),
+                  .min(env.NEXT_PUBLIC_MIN_SURFACE_AREA)
+                  .max(env.NEXT_PUBLIC_MAX_SURFACE_AREA),
               })
               .refine(
                 (areas) => {
@@ -188,19 +189,25 @@ export const planetRouter = createTRPCRouter({
         // (ex: std dev of 10000 for value produces a planet value of 234_000_000_000_000, which exceeds value cap)
         // The stats of this planet will be scaled down accordingly
         stdDeviationPlanetStats: z.object({
-          valueStdDev: z.number().min(0).max(env.MAX_LISTING_PRICE),
-          surfaceAreaStdDev: z.number().min(0).max(env.MAX_SURFACE_AREA),
+          valueStdDev: z
+            .number()
+            .min(env.NEXT_PUBLIC_MIN_LISTING_PRICE)
+            .max(env.NEXT_PUBLIC_MAX_LISTING_PRICE),
+          surfaceAreaStdDev: z
+            .number()
+            .min(env.NEXT_PUBLIC_MIN_SURFACE_AREA)
+            .max(env.NEXT_PUBLIC_MAX_SURFACE_AREA),
         }),
         // The mean that the randomly generated planet stats will vary about
         meanPlanetStats: z.object({
           valueMean: z
             .number()
-            .min(env.MIN_LISTING_PRICE)
-            .max(env.MAX_LISTING_PRICE),
+            .min(env.NEXT_PUBLIC_MIN_LISTING_PRICE)
+            .max(env.NEXT_PUBLIC_MAX_LISTING_PRICE),
           surfaceAreaMean: z
             .number()
-            .min(env.MIN_SURFACE_AREA)
-            .max(env.MAX_SURFACE_AREA),
+            .min(env.NEXT_PUBLIC_MIN_SURFACE_AREA)
+            .max(env.NEXT_PUBLIC_MAX_SURFACE_AREA),
         }),
       }),
     )
@@ -253,11 +260,15 @@ export const planetRouter = createTRPCRouter({
           await ctx.db.planet.create({
             data: {
               name: generateRandomPlanetName(),
-              surfaceArea: Math.round(
-                generateRandomNumberWithStdDev(
-                  meanPlanetStats.surfaceAreaMean,
-                  stdDeviationPlanetStats.surfaceAreaStdDev,
+              surfaceArea: clampNumber(
+                Math.round(
+                  generateRandomNumberWithStdDev(
+                    meanPlanetStats.surfaceAreaMean,
+                    stdDeviationPlanetStats.surfaceAreaStdDev,
+                  ),
                 ),
+                env.NEXT_PUBLIC_MIN_SURFACE_AREA,
+                env.NEXT_PUBLIC_MAX_SURFACE_AREA,
               ),
               discoveryDate: new Date(),
               quality: quality,
@@ -266,12 +277,16 @@ export const planetRouter = createTRPCRouter({
               planetImage: { connect: { id: planetImage?.id } },
               listing: {
                 create: {
-                  listPrice: Math.round(
-                    generateRandomNumberWithStdDev(
-                      meanPlanetStats.valueMean,
-                      stdDeviationPlanetStats.valueStdDev,
-                    ) *
-                      (qualityIdx + 1),
+                  listPrice: clampNumber(
+                    Math.round(
+                      generateRandomNumberWithStdDev(
+                        meanPlanetStats.valueMean,
+                        stdDeviationPlanetStats.valueStdDev,
+                      ) *
+                        (qualityIdx + 1),
+                    ),
+                    env.NEXT_PUBLIC_MIN_LISTING_PRICE,
+                    env.NEXT_PUBLIC_MAX_LISTING_PRICE,
                   ),
                   listDate: new Date(),
                 },
