@@ -10,32 +10,11 @@ import { env } from "~/env.mjs";
 const PriceRangeSlider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> & {
-    setFilters: React.Dispatch<
-      React.SetStateAction<
-        RouterInputs["planet"]["getAllPurchasablePlanets"]["filters"]
-      >
-    >;
     filters: RouterInputs["planet"]["getAllPurchasablePlanets"]["filters"];
   }
->(({ className, setFilters, filters, ...props }, ref) => {
-  // Updates the values of min price and max price in filter
-  function updateFilterPriceRangeState(newMin: number, newMax: number) {
-    setFilters((past) => {
-      return {
-        ...past,
-        priceRange: {
-          minPrice: newMin,
-          maxPrice: newMax,
-        },
-      };
-    });
-  }
-
+>(({ className, filters, ...props }, ref) => {
   return (
     <SliderPrimitive.Root
-      onValueChange={(v) => {
-        updateFilterPriceRangeState(Math.min(...v), Math.max(...v));
-      }}
       ref={ref}
       className={cn(
         "relative flex w-full touch-none select-none items-center",

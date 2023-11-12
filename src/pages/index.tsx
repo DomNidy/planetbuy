@@ -8,13 +8,14 @@ import PlanetCardSkeleton from "~/components/PlanetCardSkeleton";
 import { type RouterInputs } from "~/utils/api";
 import { now } from "next-auth/client/_utils";
 import { useDebounce } from "@uidotdev/usehooks";
+import SearchFilterProvider from "~/context/SearchFilterContext";
 
 export default function Home() {
   const [filters, setFilters] = useState<
     RouterInputs["planet"]["getAllPurchasablePlanets"]["filters"]
   >({});
 
-  // 
+  //
   const debouncedFilters = useDebounce(filters, 500);
 
   //* Planet listing infinite scroll code
@@ -51,7 +52,9 @@ export default function Home() {
       <main className=" min-h-screen flex-row justify-center gap-4 bg-pbdark-800  ">
         <Hero />
         <div className="mt-[750px] flex w-full flex-col items-center justify-center">
-          <SearchBar filters={filters} setFilters={setFilters} />
+          <SearchFilterProvider>
+            <SearchBar filters={filters} setFilters={setFilters} />
+          </SearchFilterProvider>
         </div>
         <div
           className="mt-[40px] grid w-full  grid-cols-1 items-stretch gap-8 p-10 
