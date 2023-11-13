@@ -36,10 +36,6 @@ export default function SearchBar({
 }) {
   const searchFilterContext = useContext(SearchFilterContext);
 
-  // Stores state of price range slider (this is to make the sliders controlled components, allowing us to easily modify their values via code)
-  const [priceRangeSliderValues, setPriceRangeSliderValues] = useState<
-    number[]
-  >([env.NEXT_PUBLIC_MIN_LISTING_PRICE, env.NEXT_PUBLIC_MAX_LISTING_PRICE]);
 
   function resetFilters() {
     setFilters({
@@ -124,7 +120,6 @@ export default function SearchBar({
                       SearchFilterKeys.PRICE_RANGE,
                       true,
                     );
-
                     setFilters((past) => {
                       return {
                         ...past,
@@ -164,7 +159,6 @@ export default function SearchBar({
                       SearchFilterKeys.SURFACE_AREA_RANGE,
                       true,
                     );
-
                     setFilters((past) => {
                       return {
                         ...past,

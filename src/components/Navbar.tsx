@@ -107,15 +107,6 @@ function AuthDisplay() {
                   <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <Link
-                  href={`${getBaseUrl()}/profile/${sessionData.user.id}`}
-                  className="flex w-full items-center"
-                >
-                  <Container className="mr-2 h-4 w-4" />
-                  <span>Your Planets</span>
-                </Link>
-              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuLabel>Marketplace</DropdownMenuLabel>
             <DropdownMenuSeparator />

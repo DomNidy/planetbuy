@@ -14,7 +14,7 @@ export default function ListingPage() {
   const router = useRouter();
   const shoppingCart = useContext(ShoppingCartContext);
 
-  const listingData = api.planet.getPlanetFromListingId.useQuery({
+  const listingData = api.planet.getPlanetDataFromListingId.useQuery({
     listingId: router.query.listingId as string,
   });
 
@@ -32,7 +32,7 @@ export default function ListingPage() {
   return (
     <div className="flex min-h-screen w-full justify-center bg-pbdark-800 px-4  md:px-16 lg:px-44">
       <div className="mt-36 flex  h-fit  w-fit  flex-col rounded-lg  p-4">
-        <div className="flex  flex-col gap-4  sm:flex-row">
+        <div className="flex  flex-col gap-4  lg:flex-row">
           <div
             className=" relative mb-4  aspect-square rounded-2xl bg-pbneutral-500
        md:h-[600px] md:w-[600px]"
@@ -92,7 +92,7 @@ export default function ListingPage() {
               </h2>
             </div>
 
-            <div className="mt-2 flex w-[17rem] flex-row justify-start  gap-2 px-1 md:w-80">
+            <div className="mt-2 flex w-full flex-row justify-start  gap-2 px-1 ">
               <h2 className="basis-5/12 text-[18px]  font-medium leading-6 tracking-tighter   text-pbtext-700">
                 Quality:
               </h2>
@@ -125,7 +125,7 @@ export default function ListingPage() {
               </h2>
             </div>
 
-            <div className="flex w-[17rem] flex-row justify-start gap-2 px-1 md:w-80">
+            <div className="flex w-full flex-row justify-start gap-2 px-1 ">
               <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter   text-pbtext-700">
                 Terrain:
               </h2>
@@ -165,7 +165,7 @@ export default function ListingPage() {
               </h2>
             </div>
 
-            <div className="flex w-[17rem] flex-row justify-start gap-2 px-1 md:w-80">
+            <div className="flex w-full flex-row justify-start gap-2 px-1 ">
               <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter  text-pbtext-700">
                 Temperature:
               </h2>
@@ -209,7 +209,7 @@ export default function ListingPage() {
               </h2>
             </div>
 
-            <div className="flex w-[17rem] flex-row justify-start gap-2 px-1 md:w-80">
+            <div className="flex w-full flex-row justify-start gap-2 px-1 ">
               <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter text-pbtext-700">
                 Surface Area:
               </h2>
@@ -219,14 +219,7 @@ export default function ListingPage() {
               </h2>
             </div>
 
-            <div className="flex w-[17rem] flex-row justify-start gap-2  px-1 md:w-80">
-              <h2 className="basis-5/12 text-[18px] font-medium leading-6 tracking-tighter   text-pbtext-700">
-                List Price:
-              </h2>
-              <h2 className=" basis-7/12 text-end text-[20px] font-semibold tracking-tighter text-pbtext-500">
-                ${formatNumberToStringWithCommas(listingData.data.listPrice)}
-              </h2>
-            </div>
+            <div className="flex w-[17rem] flex-row justify-start gap-2  px-1 md:w-80"></div>
             {listingData.data.id &&
             shoppingCart.isItemInCart(listingData.data.id) ? (
               <div

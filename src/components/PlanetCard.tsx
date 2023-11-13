@@ -34,7 +34,7 @@ export default function PlanetCard({
       {/** Planet image here */}
 
       <div
-        className=" relative mb-4  aspect-square
+        className="relative mb-4 aspect-square
        rounded-2xl "
       >
         {planetData?.planet?.planetImage.bucketPath && (
@@ -45,8 +45,9 @@ export default function PlanetCard({
             quality={75}
             blurDataURL={`${env.NEXT_PUBLIC_BUCKET_URL}/${planetData?.planet?.planetImage.bucketPath}`}
             placeholder="blur"
-            width={1024}
-            height={1024}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+
           />
         )}
         {planetData.planet.listing?.id &&
@@ -115,7 +116,7 @@ export default function PlanetCard({
             : `${getBaseUrl()}/planet/${planetData.planet?.id}`
         } `}
       >
-        <div className="flex w-full  justify-between">
+        <div className="flex w-full justify-between">
           <h2 className="text-[22px] font-semibold leading-6 tracking-tighter text-pbtext-500 ">
             {planetData.planet?.name}
           </h2>

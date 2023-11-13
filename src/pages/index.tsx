@@ -49,7 +49,7 @@ export default function Home() {
 
   return (
     <>
-      <main className=" min-h-screen flex-row justify-center gap-4 bg-pbdark-800  ">
+      <main className="min-h-screen flex-row justify-center gap-4 bg-pbdark-800">
         <Hero />
         <div className="mt-[750px] flex w-full flex-col items-center justify-center">
           <SearchFilterProvider>
@@ -57,7 +57,7 @@ export default function Home() {
           </SearchFilterProvider>
         </div>
         <div
-          className="mt-[40px] grid w-full  grid-cols-1 items-stretch gap-8 p-10 
+          className="mt-[40px] grid w-full grid-cols-1 items-stretch gap-8 p-10 
         sm:px-16 md:grid-cols-2 md:px-32 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5"
         >
           {allPlanets?.data?.pages ? (

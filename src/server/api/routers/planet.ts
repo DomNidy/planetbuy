@@ -143,7 +143,34 @@ export const planetRouter = createTRPCRouter({
 
       return { items, nextCursor };
     }),
-  getPlanetFromListingId: publicProcedure
+  getPlanetData: publicProcedure
+    .input(
+      z.object({
+        planetId: z.string(),
+      }),
+    )
+    .query(async ({ input: { planetId }, ctx }) => {
+      const planetData = await ctx.db.planet.findUnique({
+        where: { id: planetId },
+        select: {
+          id: true,
+          discoveryDate: true,
+          listing: true,
+          name: true,
+          owner: true,
+          surfaceArea: true,
+          quality: true,
+          temperature: true,
+          terrain: true,
+          planetImage: {
+            select: { bucketPath: true },
+          },
+        },
+      });
+
+      return planetData;
+    }),
+  getPlanetDataFromListingId: publicProcedure
     .input(
       z.object({
         listingId: z.string(),
