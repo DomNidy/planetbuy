@@ -15,7 +15,7 @@ export default function PlanetCard({
   planetData,
   variant,
 }: {
-  planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"]["items"][number];
+  planetData: RouterOutputs["planet"]["getPlanetListings"]["items"][number];
   variant: "listing" | "showcase";
 }) {
   const shoppingCart = useContext(ShoppingCartContext);

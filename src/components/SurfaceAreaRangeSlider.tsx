@@ -10,7 +10,7 @@ import { env } from "~/env.mjs";
 const SurfaceAreaRangeSlider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> & {
-    filters: RouterInputs["planet"]["getAllPurchasablePlanets"]["filters"];
+    filters: RouterInputs["planet"]["getPlanetListings"]["filters"];
   }
 >(({ className, filters, ...props }, ref) => {
   return (

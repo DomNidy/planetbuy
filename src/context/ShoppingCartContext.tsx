@@ -8,7 +8,7 @@ import { type RouterOutputs, api, getBaseUrl } from "~/utils/api";
 type CartCTX = {
   cart?: RouterOutputs["user"]["getCartItems"];
   addItemToCart: (
-    planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"]["items"][number],
+    planetData: RouterOutputs["planet"]["getPlanetListings"]["items"][number],
     setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
   ) => void;
   removeItemFromCart: (
@@ -128,7 +128,7 @@ export default function ShoppingCartProvider({
 
   // Wrapper functions around mutations, these are made available to outter context
   const addItemToCart = (
-    planetData: RouterOutputs["planet"]["getAllPurchasablePlanets"]["items"][number],
+    planetData: RouterOutputs["planet"]["getPlanetListings"]["items"][number],
     setIsOptimisticCallback: (value: SetStateAction<boolean>) => void,
   ) => {
     if (session.status === "unauthenticated") {

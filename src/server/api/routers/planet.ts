@@ -34,7 +34,7 @@ export const planetRouter = createTRPCRouter({
         },
       });
     }),
-  getAllPurchasablePlanets: publicProcedure
+  getPlanetListings: publicProcedure
     .input(
       z.object({
         limit: z.number().optional(),
@@ -258,12 +258,13 @@ export const planetRouter = createTRPCRouter({
 
           // Randomly generated numbers must be greater than qualityProbability in order to increment planet quality
           // Increasing qualityProbability will decrease the probability of higher quality planets being chosen
-          const qualityProbability = 0.75;
+          const qualityProbability = 0.7;
           const qualityArray = Object.values(PlanetQuality);
           let qualityIdx = 0;
           while (Math.random() > qualityProbability && qualityIdx < 4) {
             qualityIdx += 1;
           }
+
           const quality = qualityArray[qualityIdx]!;
 
           // Find an image which matches the properties of the generated planet

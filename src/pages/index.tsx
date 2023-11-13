@@ -12,14 +12,14 @@ import SearchFilterProvider from "~/context/SearchFilterContext";
 
 export default function Home() {
   const [filters, setFilters] = useState<
-    RouterInputs["planet"]["getAllPurchasablePlanets"]["filters"]
+    RouterInputs["planet"]["getPlanetListings"]["filters"]
   >({});
 
   //
   const debouncedFilters = useDebounce(filters, 500);
 
   //* Planet listing infinite scroll code
-  const allPlanets = api.planet.getAllPurchasablePlanets.useInfiniteQuery(
+  const allPlanets = api.planet.getPlanetListings.useInfiniteQuery(
     {
       limit: 25,
       filters: debouncedFilters,

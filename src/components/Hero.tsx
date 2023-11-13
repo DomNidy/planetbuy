@@ -7,7 +7,7 @@ export default function Hero() {
         loop
         className="fade-hero-in absolute left-0 top-[-200px] z-[1] block h-[850px] w-full rotate-180 object-cover md:top-[-150px] "
       >
-        <source src="blackhole.webm" type="video/webm" />
+        <source src="blackhole.webm" type="video/webm"/>
       </video>
       <div className="absolute left-0 top-[310px] z-10 flex  h-[390px] w-full items-center justify-center bg-gradient-to-b from-transparent to-[#020013] px-8 sm:top-[350px] ">
         {" "}

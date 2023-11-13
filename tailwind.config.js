@@ -18,6 +18,7 @@ module.exports = {
     extend: {
 
       colors: {
+        pbaccent: { "common": "#6B7280", "uncommon": "#16A34A", "rare": "#2563EB", "outstanding": "#9333EA", "phenomenal": "#EA580C" },
         pbdark: { "850": "#050410", "800": "#020013", "700": '#050033' },
         pbprimary: { "100": "#fafcfb", "400": "#cb70ff", "500": "#c35cff", "600": "#B433FF", "700": "#a50aff" },
         pbneutral: { "400": "#E3E4E3", "500": "#D1D2D1" },

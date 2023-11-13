@@ -9,6 +9,8 @@ import {
 export enum SearchFilterKeys {
   PRICE_RANGE = "PRICE_RANGE",
   SURFACE_AREA_RANGE = "SURFACE_AREA_RANGE",
+  PLANET_QUALITIES = "PLANET_QUALITIES",
+  PLANET_TERRAINS = "PLANET_TERRAINS",
 }
 
 type SearchFilterCTX = {
@@ -39,6 +41,8 @@ export default function SearchFilterProvider({
   >({
     PRICE_RANGE: false,
     SURFACE_AREA_RANGE: false,
+    PLANET_QUALITIES: false,
+    PLANET_TERRAINS: false,
   });
 
   // Returns an array of `SearchFilterKeys` indicating filters that are active
