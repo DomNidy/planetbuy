@@ -45,6 +45,7 @@ export const planetRouter = createTRPCRouter({
             planetTemperature: z
               .array(z.nativeEnum(PlanetTemperatureRange))
               .optional(),
+            planetTerrain: z.array(z.nativeEnum(PlanetTerrain)).optional(),
             planetQuality: z.array(z.nativeEnum(PlanetQuality)).optional(),
             priceRange: z
               .object({
@@ -112,6 +113,7 @@ export const planetRouter = createTRPCRouter({
             },
             quality: { in: filters?.planetQuality },
             temperature: { in: filters?.planetTemperature },
+            terrain: { in: filters?.planetTerrain },
             name: { startsWith: filters?.planetName },
           },
         },

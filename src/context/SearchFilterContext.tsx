@@ -11,6 +11,7 @@ export enum SearchFilterKeys {
   SURFACE_AREA_RANGE = "SURFACE_AREA_RANGE",
   PLANET_QUALITIES = "PLANET_QUALITIES",
   PLANET_TERRAINS = "PLANET_TERRAINS",
+  PLANET_TEMPERATURES = "PLANET_TEMPERATURES",
 }
 
 type SearchFilterCTX = {
@@ -43,6 +44,7 @@ export default function SearchFilterProvider({
     SURFACE_AREA_RANGE: false,
     PLANET_QUALITIES: false,
     PLANET_TERRAINS: false,
+    PLANET_TEMPERATURES: false,
   });
 
   // Returns an array of `SearchFilterKeys` indicating filters that are active

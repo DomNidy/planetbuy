@@ -28,7 +28,7 @@ const PriceRangeSlider = React.forwardRef<
 
       <SliderPrimitive.Thumb className="block h-5 w-5 cursor-pointer rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
         <div
-          className={`relative top-7 h-fit w-fit -translate-x-1/3 rounded-full bg-pbdark-800 p-1 transition-transform`}
+          className={`relative top-7 h-fit w-fit  rounded-full bg-pbdark-800 p-1 transition-transform`}
         >
           <p className="font-semibold text-pbprimary-100">
             $
@@ -42,7 +42,7 @@ const PriceRangeSlider = React.forwardRef<
 
       <SliderPrimitive.Thumb className="block h-5 w-5 cursor-pointer rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
         <div
-          className={`relative top-7 h-fit w-fit -translate-x-1/3 rounded-full bg-pbdark-800 p-1 transition-transform`}
+          className={`relative top-7  h-fit w-fit -translate-x-[80%] rounded-full bg-pbdark-800 p-1 transition-transform`}
         >
           <p className="font-semibold text-pbprimary-100">
             $

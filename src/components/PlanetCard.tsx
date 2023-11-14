@@ -47,7 +47,6 @@ export default function PlanetCard({
             placeholder="blur"
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-
           />
         )}
         {planetData.planet.listing?.id &&
@@ -122,17 +121,25 @@ export default function PlanetCard({
           </h2>
           <h2
             className={`text-[22px] font-semibold leading-6 tracking-tighter 
-            ${planetData.planet?.quality === "COMMON" ? "text-gray-500" : ""}
-            ${planetData.planet?.quality === "UNIQUE" ? "text-green-600" : ""}
-            ${planetData.planet?.quality === "RARE" ? "text-blue-600" : ""}
+            ${
+              planetData.planet?.quality === "COMMON"
+                ? "text-pbaccent-common"
+                : ""
+            }
+            ${
+              planetData.planet?.quality === "UNIQUE"
+                ? "text-pbaccent-uncommon"
+                : ""
+            }
+            ${planetData.planet?.quality === "RARE" ? "text-pbaccent-rare" : ""}
             ${
               planetData.planet?.quality === "OUTSTANDING"
-                ? "text-purple-600"
+                ? "text-pbaccent-outstanding"
                 : ""
             }
             ${
               planetData.planet?.quality === "PHENOMENAL"
-                ? "text-orange-600"
+                ? "text-pbaccent-phenomenal"
                 : ""
             }
             `}
