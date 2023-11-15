@@ -45,6 +45,17 @@ export const planetRouter = createTRPCRouter({
             planetTemperature: z
               .array(z.nativeEnum(PlanetTemperatureRange))
               .optional(),
+            sortBy: z
+              .object({
+                property: z.enum([
+                  "SURFACE_AREA",
+                  "PRICE",
+                  "QUALITY",
+                  "LIST_DATE",
+                ]),
+                order: z.enum(["asc", "desc"]),
+              })
+              .optional(),
             planetTerrain: z.array(z.nativeEnum(PlanetTerrain)).optional(),
             planetQuality: z.array(z.nativeEnum(PlanetQuality)).optional(),
             priceRange: z
@@ -100,7 +111,31 @@ export const planetRouter = createTRPCRouter({
       const items = await ctx.db.listing.findMany({
         take: limit + 1,
         cursor: cursor ? { id: cursor.id } : undefined,
-        orderBy: { listDate: "desc" },
+        orderBy: [
+          filters && filters?.sortBy?.property === "PRICE"
+            ? {
+                listPrice: filters?.sortBy?.order,
+              }
+            : {},
+
+          filters && filters?.sortBy?.property === "QUALITY"
+            ? {
+                planet: { quality: filters?.sortBy?.order },
+              }
+            : {},
+
+          filters && filters?.sortBy?.property === "SURFACE_AREA"
+            ? {
+                planet: { surfaceArea: filters?.sortBy?.order },
+              }
+            : {},
+
+          filters && filters?.sortBy?.property === "LIST_DATE"
+            ? {
+                listDate: filters.sortBy.order,
+              }
+            : {},
+        ],
         where: {
           listPrice: {
             gte: filters?.priceRange?.minPrice,

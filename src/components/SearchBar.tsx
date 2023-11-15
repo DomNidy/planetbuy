@@ -1,4 +1,4 @@
-import { Check, Filter } from "lucide-react";
+import { Check, Filter, SortDesc } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { type RouterInputs } from "~/utils/api";
@@ -30,7 +30,6 @@ import {
 } from "@prisma/client";
 import { overpass } from "~/pages/_app";
 import { ScrollArea } from "./ui/scroll-area";
-import { CaretSortIcon } from "@radix-ui/react-icons";
 import {
   Select,
   SelectContent,
@@ -105,40 +104,22 @@ export default function SearchBar({
       <div className=" flex h-16 items-center justify-center rounded-r-full border-[2px] border-pbneutral-500 bg-pbneutral-400 p-4 text-lg text-neutral-700 ">
         <Dialog>
           <DialogTrigger asChild>
-            <>
-              <Button className="relative rounded-full border-2  border-white bg-pbdark-850">
-                <span className="flex items-center justify-center  ">
-                  <p className="hidden sm:block">Filter Results</p>
-                  <Filter />
-                </span>
-                {searchFilterContext.getActiveFilters().length > 0 ? (
-                  <div
-                    className={`absolute -right-2 -top-1 flex h-6 w-6 items-center justify-center rounded-full 
+            <Button className="relative rounded-full border-2  border-white bg-pbdark-850">
+              <span className="flex items-center justify-center  ">
+                <p className="hidden sm:block">Filter Results</p>
+                <Filter />
+              </span>
+              {searchFilterContext.getActiveFilters().length > 0 ? (
+                <div
+                  className={`absolute -right-2 -top-1 flex h-6 w-6 items-center justify-center rounded-full 
                               border-2 border-pbdark-850 bg-pbprimary-100 text-center font-semibold text-pbdark-850 `}
-                  >
-                    {searchFilterContext.getActiveFilters().length}
-                  </div>
-                ) : (
-                  <></>
-                )}
-              </Button>
-              {/* Set up sorting in search component (sort by price, surface area, and quality) */}
-              <Select>
-                <SelectTrigger className="ml-2 rounded-full border-2 border-white bg-pbdark-850 bg-primary text-primary-foreground hover:bg-primary/80">
-                  <span className="flex items-center justify-center">
-                    <p className="hidden text-white sm:block">Sort</p>
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Sort by</SelectLabel>
-                    <SelectItem value="price">Price</SelectItem>
-                    <SelectItem value="surfaceArea">Surface Area</SelectItem>
-                    <SelectItem value="quality">Quality</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </>
+                >
+                  {searchFilterContext.getActiveFilters().length}
+                </div>
+              ) : (
+                <></>
+              )}
+            </Button>
           </DialogTrigger>
           <DialogContent className="w-[90%] rounded-md bg-pbprimary-100 sm:w-auto ">
             <ScrollArea className=" -z-10 ml-2 mt-2  h-[600px] pr-[1.2rem]">
@@ -671,6 +652,61 @@ export default function SearchBar({
             </ScrollArea>
           </DialogContent>
         </Dialog>
+        <Select
+          onValueChange={(newSortProperty) => {
+            setFilters((past) => {
+              return {
+                ...past,
+                sortBy: {
+                  order: filters?.sortBy?.order ?? "desc",
+                  property: newSortProperty as
+                    | "PRICE"
+                    | "SURFACE_AREA"
+                    | "QUALITY"
+                    | "LIST_DATE",
+                },
+              };
+            });
+          }}
+        >
+          <SelectTrigger className="ml-2 rounded-full border-2 border-white bg-pbdark-850 bg-primary text-primary-foreground hover:bg-primary/80">
+            <span className="flex items-center justify-center">
+              <p className="hidden text-white sm:block">Sort</p>
+            </span>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel className="flex justify-between">
+                <h2 className="text-left self-start">Sort by </h2>
+                <span>
+                  <SortDesc
+                    onClick={() =>
+                      setFilters((past) => {
+                        return {
+                          ...past,
+                          sortBy: {
+                            order:
+                              past?.sortBy?.order === "asc" ? "desc" : "asc",
+                            property: past?.sortBy?.property ?? "LIST_DATE",
+                          },
+                        };
+                      })
+                    }
+                    className={`cursor-pointer ${
+                      filters?.sortBy?.order === "asc"
+                        ? "rotate-180"
+                        : "rotate-0"
+                    }`}
+                  ></SortDesc>
+                </span>
+              </SelectLabel>
+              <SelectItem value="LIST_DATE">List Date</SelectItem>
+              <SelectItem value="PRICE">Price</SelectItem>
+              <SelectItem value="SURFACE_AREA">Surface Area</SelectItem>
+              <SelectItem value="QUALITY">Quality</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
