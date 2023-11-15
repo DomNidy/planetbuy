@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import {
-  useState,
   type Dispatch,
   type SetStateAction,
   useContext,
@@ -30,8 +29,16 @@ import {
   PlanetTerrain,
 } from "@prisma/client";
 import { overpass } from "~/pages/_app";
-import { Checkbox } from "./ui/checkbox";
 import { ScrollArea } from "./ui/scroll-area";
+import { CaretSortIcon } from "@radix-ui/react-icons";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+} from "./ui/select";
 
 export default function SearchBar({
   filters,
@@ -98,25 +105,43 @@ export default function SearchBar({
       <div className=" flex h-16 items-center justify-center rounded-r-full border-[2px] border-pbneutral-500 bg-pbneutral-400 p-4 text-lg text-neutral-700 ">
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="relative rounded-full border-2 border-white bg-pbdark-850">
-              <span className="flex items-center justify-center ">
-                <p>Filter Results</p>
-                <Filter />
-              </span>
-              {searchFilterContext.getActiveFilters().length > 0 ? (
-                <div
-                  className={`absolute -right-2 -top-1 flex h-6 w-6 items-center justify-center rounded-full 
+            <>
+              <Button className="relative rounded-full border-2  border-white bg-pbdark-850">
+                <span className="flex items-center justify-center  ">
+                  <p className="hidden sm:block">Filter Results</p>
+                  <Filter />
+                </span>
+                {searchFilterContext.getActiveFilters().length > 0 ? (
+                  <div
+                    className={`absolute -right-2 -top-1 flex h-6 w-6 items-center justify-center rounded-full 
                               border-2 border-pbdark-850 bg-pbprimary-100 text-center font-semibold text-pbdark-850 `}
-                >
-                  {searchFilterContext.getActiveFilters().length}
-                </div>
-              ) : (
-                <></>
-              )}
-            </Button>
+                  >
+                    {searchFilterContext.getActiveFilters().length}
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </Button>
+              {/* Set up sorting in search component (sort by price, surface area, and quality) */}
+              <Select>
+                <SelectTrigger className="ml-2 rounded-full border-2 border-white bg-pbdark-850 bg-primary text-primary-foreground hover:bg-primary/80">
+                  <span className="flex items-center justify-center">
+                    <p className="hidden text-white sm:block">Sort</p>
+                  </span>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Sort by</SelectLabel>
+                    <SelectItem value="price">Price</SelectItem>
+                    <SelectItem value="surfaceArea">Surface Area</SelectItem>
+                    <SelectItem value="quality">Quality</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </>
           </DialogTrigger>
           <DialogContent className="w-[90%] rounded-md bg-pbprimary-100 sm:w-auto ">
-            <ScrollArea className=" mt-2 pr-[1.2rem]  -z-10 h-[600px]">
+            <ScrollArea className=" -z-10 ml-2 mt-2  h-[600px] pr-[1.2rem]">
               <div className="">
                 <DialogHeader>
                   <DialogTitle className="text-lg font-semibold tracking-tight">
@@ -203,9 +228,7 @@ export default function SearchBar({
                   </div>
 
                   <div className="flex flex-col">
-                    <h2 className="mb-4 font-semibold tracking-tight">
-                      Planet Qualities
-                    </h2>
+                    <h2 className="mb-4 font-semibold ">Planet Qualities</h2>
                     <ToggleGroup
                       value={filters?.planetQuality ?? []}
                       onValueChange={(selectedQualities) => {
@@ -228,10 +251,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetQuality.COMMON}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetQuality.COMMON}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -249,9 +272,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetQuality.UNIQUE}`}
                         aria-label="Toggle unique"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full   rounded-lg border-4 border-pbaccent-uncommon bg-pbprimary-100 p-1.5 font-semibold  text-pbaccent-uncommon  hover:text-pbaccent-uncommon/90">
+                        <div className="relative w-full   rounded-lg border-2 border-green-600 bg-pbprimary-100 p-1.5 font-semibold  text-green-600  hover:text-green-600/90">
                           {`${PlanetQuality.UNIQUE}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -268,10 +292,11 @@ export default function SearchBar({
 
                       <ToggleGroupItem
                         value={`${PlanetQuality.RARE}`}
+                        className="w-full"
                         aria-label="Toggle rare"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-pbaccent-rare bg-pbprimary-100 p-1.5 font-semibold  text-pbaccent-rare shadow-md hover:text-pbaccent-rare/90">
+                        <div className="relative w-full rounded-lg border-2 border-pbaccent-rare bg-pbprimary-100 p-1.5 font-semibold  text-pbaccent-rare shadow-md hover:text-pbaccent-rare/90">
                           {`${PlanetQuality.RARE}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -288,10 +313,11 @@ export default function SearchBar({
 
                       <ToggleGroupItem
                         value={`${PlanetQuality.OUTSTANDING}`}
+                        className="w-full"
                         aria-label="Toggle outstanding"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-pbaccent-outstanding bg-pbprimary-100 p-1.5 font-semibold  text-pbaccent-outstanding shadow-md hover:text-pbaccent-outstanding/90">
+                        <div className="relative w-fit rounded-lg border-2 border-pbaccent-outstanding bg-pbprimary-100 p-1.5 font-semibold  text-pbaccent-outstanding shadow-md hover:text-pbaccent-outstanding/90">
                           {`${PlanetQuality.OUTSTANDING}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -309,10 +335,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetQuality.PHENOMENAL}`}
                         aria-label="Toggle phenomenal"
-                        className=" "
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-pbaccent-phenomenal bg-pbprimary-100 p-1.5 font-semibold text-pbaccent-phenomenal  shadow-md hover:text-pbaccent-phenomenal/90">
+                        <div className="relative w-fit rounded-lg border-2 border-pbaccent-phenomenal bg-pbprimary-100 p-1.5 font-semibold text-pbaccent-phenomenal  shadow-md hover:text-pbaccent-phenomenal/90">
                           {`${PlanetQuality.PHENOMENAL}`}{" "}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700  ${
@@ -330,9 +356,7 @@ export default function SearchBar({
                   </div>
 
                   <div className="flex flex-col">
-                    <h2 className="mb-4 font-semibold tracking-tight">
-                      Planet Terrains
-                    </h2>
+                    <h2 className="mb-4 font-semibold ">Planet Terrains</h2>
                     <ToggleGroup
                       value={filters?.planetTerrain ?? []}
                       onValueChange={(selectedTerrains) => {
@@ -356,10 +380,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTerrain.DESERTS}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTerrain.DESERTS}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -377,10 +401,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTerrain.FORESTS}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTerrain.FORESTS}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -398,10 +422,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTerrain.MOUNTAINS}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTerrain.MOUNTAINS}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -419,10 +443,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTerrain.OCEANS}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTerrain.OCEANS}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -440,10 +464,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTerrain.PLAINS}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTerrain.PLAINS}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -461,10 +485,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTerrain.OTHER}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTerrain.OTHER}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -482,9 +506,7 @@ export default function SearchBar({
                   </div>
 
                   <div className="flex flex-col">
-                    <h2 className="mb-4 font-semibold tracking-tight">
-                      Planet Climates
-                    </h2>
+                    <h2 className="mb-4 font-semibold ">Planet Climates</h2>
                     <ToggleGroup
                       value={filters?.planetTemperature ?? []}
                       onValueChange={(selectedTemperatures) => {
@@ -512,11 +534,11 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTemperatureRange.EXTREME_COLD}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
-                          {`${PlanetTemperatureRange.EXTREME_COLD}`}
+                        <div className="relative  w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold tracking-tighter  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                          EXTREMELY COLD
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
                               filters?.planetTemperature?.find(
@@ -534,10 +556,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTemperatureRange.COLD}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold tracking-tighter  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTemperatureRange.COLD}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -555,10 +577,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTemperatureRange.TEMPERATE}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold tracking-tighter  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTemperatureRange.TEMPERATE}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -576,10 +598,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTemperatureRange.WARM}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold tracking-tighter  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTemperatureRange.WARM}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -597,10 +619,10 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTemperatureRange.HOT}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold tracking-tighter  text-neutral-500 shadow-md hover:text-neutral-500/90">
                           {`${PlanetTemperatureRange.HOT}`}
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
@@ -618,11 +640,11 @@ export default function SearchBar({
                       <ToggleGroupItem
                         value={`${PlanetTemperatureRange.EXTREME_HOT}`}
                         aria-label="Toggle common"
-                        className="w-fit"
+                        className="w-full"
                       >
                         {" "}
-                        <div className="relative w-full rounded-lg border-4 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold  text-neutral-500 shadow-md hover:text-neutral-500/90">
-                          {`${PlanetTemperatureRange.EXTREME_HOT}`}
+                        <div className="relative w-full rounded-lg border-2 border-neutral-500 bg-pbprimary-100 p-1.5 font-semibold tracking-tighter  text-neutral-500 shadow-md hover:text-neutral-500/90">
+                          EXTREMELY HOT
                           <Check
                             className={`absolute -right-2.5 -top-2 h-5 w-5 rounded-full bg-pbdark-700 ${
                               filters?.planetTemperature?.find(

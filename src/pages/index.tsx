@@ -51,7 +51,7 @@ export default function Home() {
     <>
       <main className="min-h-screen flex-row justify-center gap-4 bg-pbdark-800">
         <Hero />
-        <div className="mt-[750px] flex w-full flex-col items-center justify-center">
+        <div className="mt-[750px] flex w-full flex-row items-center justify-center">
           <SearchFilterProvider>
             <SearchBar filters={filters} setFilters={setFilters} />
           </SearchFilterProvider>
