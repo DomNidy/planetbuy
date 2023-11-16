@@ -45,6 +45,7 @@ export default function SearchFilterProvider({
     PLANET_QUALITIES: false,
     PLANET_TERRAINS: false,
     PLANET_TEMPERATURES: false,
+
   });
 
   // Returns an array of `SearchFilterKeys` indicating filters that are active

@@ -2,6 +2,7 @@ import { ShoppingCartIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { env } from "~/env.mjs";
@@ -18,6 +19,7 @@ export default function PlanetCard({
   planetData: RouterOutputs["planet"]["getPlanetListings"]["items"][number];
   variant: "listing" | "showcase";
 }) {
+  const router = useRouter();
   const shoppingCart = useContext(ShoppingCartContext);
   const session = useSession();
   // Whether or not this planet card is in an optimistic state (if it is showing optimistic data while an outbound request is processing)
@@ -42,10 +44,21 @@ export default function PlanetCard({
             src={`${env.NEXT_PUBLIC_BUCKET_URL}/${planetData?.planet?.planetImage.bucketPath}`}
             alt=""
             priority
+            onClick={() =>
+              router.push(
+                `${
+                  variant === "listing"
+                    ? `${getBaseUrl()}/listing/${planetData.planet?.listing
+                        ?.id}`
+                    : `${getBaseUrl()}/planet/${planetData.planet?.id}`
+                } `,
+              )
+            }
             quality={75}
             blurDataURL={`${env.NEXT_PUBLIC_BUCKET_URL}/${planetData?.planet?.planetImage.bucketPath}`}
             placeholder="blur"
             fill
+            className="cursor-pointer"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         )}

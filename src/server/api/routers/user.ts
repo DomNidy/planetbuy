@@ -14,37 +14,36 @@ export const userRouter = createTRPCRouter({
     .input(z.object({ listingIDS: z.array(z.string()) }))
     .mutation(async ({ input, ctx }) => {
       // Object which maps each planet ID to the list price of the planet
+      // The key in this map is the listingId
+      const priceMap: Record<string, number> = {};
+
+      // Sum of all prices in cart
       let cartTotal = 0;
 
-      // Find cart items for user
-      // Calculate price of all items
-      const requestedPlanet = await ctx.db.user.findUniqueOrThrow({
+      // Get all cart items for buyers' cart
+      const buyer = await ctx.db.user.findUniqueOrThrow({
         where: {
           id: ctx.session.user.id,
         },
         select: {
-          cartItems: { include: { listing: { select: { listPrice: true } } } },
+          cartItems: {
+            include: { listing: { select: { listPrice: true } } },
+          },
+          balance: true,
+          id: true,
+          name: true,
+          email: true,
         },
       });
 
-      // increment the cart total by the value of all items in the users cart
-      requestedPlanet.cartItems.forEach((item) => {
+      // Calculate price of all items in buyers cart
+      buyer.cartItems.forEach((item) => {
+        priceMap[item.listingId] = item.listing.listPrice;
         cartTotal += item.listing.listPrice;
       });
 
-      // Get the user in order to check their balance
-      const user = await ctx.db.user.findUnique({
-        where: {
-          id: ctx.session.user.id,
-        },
-        select: {
-          balance: true,
-          id: true,
-        },
-      });
-
-      // If the user has insufficient balance to purchase items return
-      if (user?.balance && user.balance < cartTotal) {
+      // If the buyer has insufficient balance to purchase items return
+      if (buyer.balance < cartTotal) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           cause: "Insufficient balance",
@@ -52,32 +51,132 @@ export const userRouter = createTRPCRouter({
         });
       }
 
-      // Decrement users balance by cart total
-      // Update the owner of each planet in the cart to be owned by the user
-      for (const listingID of input.listingIDS) {
-        // Decrement the buyers balance
-        await ctx.db.user.update({
-          where: { id: ctx.session.user.id },
-          data: { balance: { decrement: cartTotal } },
-        });
-
-        // Update the purchased planets owner to reference the user who purchased it
-        await ctx.db.listing.update({
-          where: { id: listingID },
+      // Wrap entire procedure in a transaction to ensure atomicity
+      return ctx.db.$transaction(async () => {
+        // Create transaction entry
+        const transaction = await ctx.db.transaction.create({
           data: {
-            planet: {
-              update: { owner: { connect: { id: ctx.session.user.id } } },
-            },
+            buyer: { connect: { id: buyer.id } },
+            transactionTotal: 0,
           },
+          select: { id: true },
         });
 
-        // Delete the planet listing
-        await ctx.db.listing.delete({
-          where: { id: listingID },
-        });
-      }
+        // Decrement buyers balance by each item in the cart
+        // Update the owner of each planet in the cart to be owned by the user
+        for (const listingID of input.listingIDS) {
+          // Ensure that the listingID is present in the pricemap, and that it is defined
+          if (!(listingID in priceMap) || !priceMap[listingID]) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              cause: `listingID '${listingID}' was not found in priceMap`,
+              message: "Internal server error occured, please try again",
+            });
+          }
 
-      return "Successfully purchased items";
+          // non null assertion here as we are certain priceMap[listingID] is defined (due to previous check)
+          const planetPrice: number = priceMap[listingID]!;
+
+          // Get the id of the planet we are currently transacting
+          const currentPlanet = await ctx.db.listing.findUniqueOrThrow({
+            where: { id: listingID },
+
+            select: {
+              planet: {
+                select: {
+                  owner: { select: { id: true, name: true, email: true } },
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          });
+
+          // If there already exists a planetTransaction record connected related to Planet that we are purchasing
+          // We should update that record (which should be the most recent transaction) and set the endDate property in it to current time
+          // This represents that the user we are purchasing the planet from stopped owning the planet at this time
+          // Find all planet transactions related to current planet
+          const planetPriorTransaction =
+            await ctx.db.planetTransaction.findMany({
+              where: { planetId: currentPlanet.planet.id },
+              select: { id: true },
+              orderBy: { startDate: "desc" },
+              take: 1,
+            });
+
+          // If we found a prior transaction for the current planet, update its end date
+          if (planetPriorTransaction[0]?.id) {
+            console.log(
+              `Retrieved planet prior transaction`,
+              planetPriorTransaction,
+              "Attempting to update its end date",
+            );
+
+            // Update the end date of the planetPriorTransaction
+            await ctx.db.planetTransaction.update({
+              where: { id: planetPriorTransaction[0]!.id },
+              data: {
+                endDate: new Date(),
+              },
+            });
+          }
+
+          console.log(
+            "Creating new planet transaction with",
+            currentPlanet.planet.id,
+            transaction.id,
+          );
+          // Create new PlanetTransaction
+          await ctx.db.planetTransaction.create({
+            data: {
+              snapshotOwnerName:
+                currentPlanet.planet.owner?.name ??
+                currentPlanet.planet.owner?.email ??
+                "unknown",
+              snapshotListPrice: planetPrice,
+              snapshotPlanetName: currentPlanet.planet.name,
+              planet: { connect: { id: currentPlanet.planet.id } },
+              transaction: { connect: { id: transaction.id } },
+              startDate: new Date(),
+            },
+          });
+
+          // Decrement the buyers balance
+          await ctx.db.user.update({
+            where: { id: ctx.session.user.id },
+            data: { balance: { decrement: planetPrice } },
+          });
+
+          // Update the purchased planets owner to reference the user who purchased it
+          await ctx.db.listing.update({
+            where: { id: listingID },
+            data: {
+              planet: {
+                update: { owner: { connect: { id: ctx.session.user.id } } },
+              },
+            },
+          });
+
+          // Create and or update Transaction to include this PlanetTransaction
+          await ctx.db.transaction.update({
+            where: {
+              id: transaction.id,
+            },
+            data: {
+              // If we must create a transaction object, set transaction total equal to the value of this item
+              // (It will be incremented by the remaining items in this loop- if there are any)
+              transactionTotal: { increment: planetPrice },
+            },
+          });
+
+          // Delete the planet listing
+          await ctx.db.listing.delete({
+            where: { id: listingID },
+          });
+        }
+
+        return "Successfully purchased items";
+      });
     }),
   getCartItems: protectedProcedure.query(async ({ ctx }) => {
     const itemQuery = await ctx.db.user.findUniqueOrThrow({

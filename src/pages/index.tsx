@@ -55,6 +55,7 @@ export default function Home() {
           <SearchFilterProvider>
             <SearchBar filters={filters} setFilters={setFilters} />
           </SearchFilterProvider>
+          <div className=""></div>
         </div>
         <div
           className="mt-[40px] grid w-full grid-cols-1 items-stretch gap-8 p-10 
