@@ -51,17 +51,19 @@ export const userRouter = createTRPCRouter({
         });
       }
 
-      // Wrap entire procedure in a transaction to ensure atomicity
-      return ctx.db.$transaction(async () => {
-        // Create transaction entry
-        const transaction = await ctx.db.transaction.create({
-          data: {
-            buyer: { connect: { id: buyer.id } },
-            transactionTotal: 0,
-          },
-          select: { id: true },
-        });
+      // Create transaction entry
+      const transaction = await ctx.db.transaction.create({
+        data: {
+          buyer: { connect: { id: buyer.id } },
+          transactionTotal: 0,
+        },
+        select: { id: true },
+      });
 
+      // TODO: THIS PROCEDURE TAKES TOO LONG TO EXECUTE
+      // TODO: LOOK INTO WAYS TO PERFORM OPERATIONS MORE EFFICIENTLY
+      // Wrap entire procedure in a transaction to ensure atomicity
+      return await ctx.db.$transaction(async () => {
         // Decrement buyers balance by each item in the cart
         // Update the owner of each planet in the cart to be owned by the user
         for (const listingID of input.listingIDS) {
@@ -97,15 +99,19 @@ export const userRouter = createTRPCRouter({
           // This represents that the user we are purchasing the planet from stopped owning the planet at this time
           // Find all planet transactions related to current planet
           const planetPriorTransaction =
-            await ctx.db.planetTransaction.findMany({
+            await ctx.db.planetTransaction.findFirst({
               where: { planetId: currentPlanet.planet.id },
               select: { id: true },
               orderBy: { startDate: "desc" },
               take: 1,
             });
 
+          // TODO: This code is not working as expected, it is failing to run entirely
+          console.log("Prior", planetPriorTransaction);
+
+          // TODO: Test that this correctly updates the end time for the previous PlanetTransaction associated with this planet
           // If we found a prior transaction for the current planet, update its end date
-          if (planetPriorTransaction[0]?.id) {
+          if (planetPriorTransaction?.id) {
             console.log(
               `Retrieved planet prior transaction`,
               planetPriorTransaction,
@@ -114,7 +120,7 @@ export const userRouter = createTRPCRouter({
 
             // Update the end date of the planetPriorTransaction
             await ctx.db.planetTransaction.update({
-              where: { id: planetPriorTransaction[0]!.id },
+              where: { id: planetPriorTransaction.id },
               data: {
                 endDate: new Date(),
               },
@@ -126,53 +132,59 @@ export const userRouter = createTRPCRouter({
             currentPlanet.planet.id,
             transaction.id,
           );
-          // Create new PlanetTransaction
-          await ctx.db.planetTransaction.create({
-            data: {
-              snapshotOwnerName:
-                currentPlanet.planet.owner?.name ??
-                currentPlanet.planet.owner?.email ??
-                "unknown",
-              snapshotListPrice: planetPrice,
-              snapshotPlanetName: currentPlanet.planet.name,
-              planet: { connect: { id: currentPlanet.planet.id } },
-              transaction: { connect: { id: transaction.id } },
-              startDate: new Date(),
-            },
-          });
 
-          // Decrement the buyers balance
-          await ctx.db.user.update({
-            where: { id: ctx.session.user.id },
-            data: { balance: { decrement: planetPrice } },
-          });
-
-          // Update the purchased planets owner to reference the user who purchased it
-          await ctx.db.listing.update({
-            where: { id: listingID },
-            data: {
-              planet: {
-                update: { owner: { connect: { id: ctx.session.user.id } } },
+          console.log("\n\n===\nStarting transaction");
+          await ctx.db.$transaction([
+            // Create new PlanetTransaction
+            ctx.db.planetTransaction.create({
+              data: {
+                snapshotOwnerName:
+                  currentPlanet.planet.owner?.name ??
+                  currentPlanet.planet.owner?.email ??
+                  "unknown",
+                snapshotListPrice: planetPrice,
+                snapshotPlanetName: currentPlanet.planet.name,
+                planet: { connect: { id: currentPlanet.planet.id } },
+                transaction: { connect: { id: transaction.id } },
+                startDate: new Date(),
               },
-            },
-          });
+            }),
 
-          // Create and or update Transaction to include this PlanetTransaction
-          await ctx.db.transaction.update({
-            where: {
-              id: transaction.id,
-            },
-            data: {
-              // If we must create a transaction object, set transaction total equal to the value of this item
-              // (It will be incremented by the remaining items in this loop- if there are any)
-              transactionTotal: { increment: planetPrice },
-            },
-          });
+            // Decrement the buyers balance
+            ctx.db.user.update({
+              where: { id: ctx.session.user.id },
+              data: { balance: { decrement: planetPrice } },
+            }),
 
-          // Delete the planet listing
-          await ctx.db.listing.delete({
-            where: { id: listingID },
-          });
+            // Update the purchased planets owner to reference the user who purchased it
+            ctx.db.listing.update({
+              where: { id: listingID },
+              data: {
+                planet: {
+                  update: {
+                    owner: { connect: { id: ctx.session.user.id } },
+                  },
+                },
+              },
+            }),
+
+            // Create and or update Transaction to include this PlanetTransaction
+            ctx.db.transaction.update({
+              where: {
+                id: transaction.id,
+              },
+              data: {
+                // If we must create a transaction object, set transaction total equal to the value of this item
+                // (It will be incremented by the remaining items in this loop- if there are any)
+                transactionTotal: { increment: planetPrice },
+              },
+            }),
+
+            // Delete the planet listing
+            ctx.db.listing.delete({
+              where: { id: listingID },
+            }),
+          ]);
         }
 
         return "Successfully purchased items";
