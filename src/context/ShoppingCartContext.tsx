@@ -139,7 +139,7 @@ export default function ShoppingCartProvider({
       toast({
         title: "Failed to add item to cart, please try again.",
         description:
-          "We couldn't add this item to your cart, an internal error occured. Please try again later.",
+          "We couldn't add this item to your cart, an internal error occured.",
         variant: "destructive",
       });
       return;

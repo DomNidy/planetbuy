@@ -1,14 +1,19 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { TRPCClientError, TRPCClientErrorLike } from "@trpc/client";
 import { Check, ShoppingCart, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useContext, useEffect } from "react";
+import Zod, { ZodError, ZodErrorMap } from "zod";
 import { Button } from "~/components/ui/button";
+import { useToast } from "~/components/ui/use-toast";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { api, getBaseUrl } from "~/utils/api";
 import { formatNumberToStringWithCommas } from "~/utils/utils";
 
 export default function Checkout() {
+  const session = useSession();
+  const { toast } = useToast();
   const router = useRouter();
   const shoppingCart = useContext(ShoppingCartContext);
   const queryClient = useQueryClient();
@@ -19,8 +24,18 @@ export default function Checkout() {
         { type: "query" },
       ]);
     },
+    onError(err) {
+      console.log(err?.data?.zodError?.fieldErrors.listingIDS);
+
+      if (err?.data?.zodError?.fieldErrors.listingIDS) {
+        toast({
+          title: "Cart item count error",
+          description: err?.data?.zodError?.fieldErrors.listingIDS,
+          variant: "destructive",
+        });
+      }
+    },
   });
-  const session = useSession();
 
   // Redirect user to signin page if they are not signed in
   useEffect(() => {
