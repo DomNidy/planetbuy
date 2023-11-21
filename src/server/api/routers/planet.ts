@@ -146,10 +146,20 @@ export const planetRouter = createTRPCRouter({
               gte: filters?.surfaceAreaRange?.minSurfaceArea,
               lte: filters?.surfaceAreaRange?.maxSurfaceArea,
             },
-            quality: { in: filters?.planetQuality },
-            temperature: { in: filters?.planetTemperature },
-            terrain: { in: filters?.planetTerrain },
             name: { startsWith: filters?.planetName },
+            // Only apply these filters if the associated filter array actually contains elements (properties to filter by)
+            ...(filters?.planetQuality && filters?.planetQuality?.length > 0
+              ? { quality: { in: filters?.planetQuality } }
+              : {}),
+
+            ...(filters?.planetTemperature &&
+            filters?.planetTemperature?.length > 0
+              ? { temperature: { in: filters?.planetTemperature } }
+              : {}),
+
+            ...(filters?.planetTerrain && filters?.planetTerrain?.length > 0
+              ? { terrain: { in: filters?.planetTerrain } }
+              : {}),
           },
         },
         select: {

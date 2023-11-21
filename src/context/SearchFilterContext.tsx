@@ -15,13 +15,21 @@ export enum SearchFilterKeys {
 }
 
 type SearchFilterCTX = {
-  getActiveFilters: () => SearchFilterKeys[];
   setActiveFilters: Dispatch<SetStateAction<Record<SearchFilterKeys, boolean>>>;
   setFilterActive: (filter: SearchFilterKeys, active: boolean) => void;
+  getActiveFilterCount: () => number;
+  activeFilters: Record<SearchFilterKeys, boolean>;
 };
 
 export const SearchFilterContext = createContext<SearchFilterCTX>({
-  getActiveFilters() {
+  activeFilters: {
+    PLANET_QUALITIES: false,
+    PLANET_TEMPERATURES: false,
+    PLANET_TERRAINS: false,
+    PRICE_RANGE: false,
+    SURFACE_AREA_RANGE: false,
+  },
+  getActiveFilterCount() {
     throw Error("Not implemented");
   },
   setActiveFilters() {
@@ -45,23 +53,7 @@ export default function SearchFilterProvider({
     PLANET_QUALITIES: false,
     PLANET_TERRAINS: false,
     PLANET_TEMPERATURES: false,
-
   });
-
-  // Returns an array of `SearchFilterKeys` indicating filters that are active
-  function getActiveFilters() {
-    const _activeFilters: SearchFilterKeys[] = [];
-
-    // If an entry inside the object has its value set to true
-    // Add the key of that entry (the SearchFilterKey) to the activeFilters array
-    for (const filter of Object.entries(activeFilters)) {
-      if (filter[1]) {
-        _activeFilters.push(filter[0] as SearchFilterKeys);
-      }
-    }
-
-    return _activeFilters;
-  }
 
   // Sets a single filters state
   function setFilterActive(filter: SearchFilterKeys, active: boolean) {
@@ -74,12 +66,26 @@ export default function SearchFilterProvider({
     });
   }
 
+  // Returns the amount of filters currently active
+  function getActiveFilterCount(): number {
+    let activeFilterCount = 0;
+
+    Object.values(activeFilters).map((filter) => {
+      if (filter) {
+        activeFilterCount += 1;
+      }
+    });
+
+    return activeFilterCount;
+  }
+
   return (
     <SearchFilterContext.Provider
       value={{
-        getActiveFilters: getActiveFilters,
+        activeFilters: activeFilters,
         setActiveFilters: setActiveFilters,
         setFilterActive: setFilterActive,
+        getActiveFilterCount: getActiveFilterCount,
       }}
     >
       {children}

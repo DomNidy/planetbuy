@@ -213,6 +213,26 @@ export const userRouter = createTRPCRouter({
     return itemQuery.cartItems;
   }),
 
+  // TODO: Begin implementing endpoints to support creating planet listings from items users own
+
+  // Return planets owned by the user who requested the endpoint (support pagination with this)
+  // * getUsersPlanets: protectedProcedure.query(async ({ctx}) => {})
+
+  // Return a users listings (specified by the user id) the endpoint (support pagination with this)
+  // * getUsersListings: publicProcedure.query(async ({ctx, input}) => {})
+
+  // Return transaction history of the user who requested the endpoint (support pagination with this)
+  // * getTransactionHistory: protectedProcedure.query(async ({ ctx }) => {}),
+
+  // Create a planet listing for a user (this user must own the planet)
+  // * createPlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})
+
+  // Update a planet listing for a user (this user must own the planet the listing is associated with, and the user ids must match)
+  // * updatePlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})
+
+  // Delete a planet listing for a user (this user must own the planet the listing is asssociated with, and the user ids must match)
+  // * deletePlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})
+  
   addItemToCart: protectedProcedure
     .input(z.object({ listingId: z.string() }))
     .mutation(async ({ input: { listingId }, ctx }) => {

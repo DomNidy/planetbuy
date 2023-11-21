@@ -72,20 +72,6 @@ export default function SearchBar({
     });
   }
 
-  // Whenever planetQuality array changes, if the array is of length 0, set planetQuality to undefined
-  // Otherwise our request would send an empty array, which would always return no results as it would fail to match any
-  useEffect(() => {
-    if (filters?.planetQuality?.length == 0) {
-      setFilters((past) => {
-        return {
-          ...past,
-          planetQuality: undefined,
-        };
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters?.planetQuality]);
-
   return (
     <div className={`flex px-8 ${overpass.className}`}>
       <Input
@@ -109,12 +95,12 @@ export default function SearchBar({
                 <p className="hidden sm:block">Filter Results</p>
                 <Filter />
               </span>
-              {searchFilterContext.getActiveFilters().length > 0 ? (
+              {searchFilterContext.getActiveFilterCount() > 0 ? (
                 <div
                   className={`absolute -right-2 -top-1 flex h-6 w-6 items-center justify-center rounded-full 
                               border-2 border-pbdark-850 bg-pbprimary-100 text-center font-semibold text-pbdark-850 `}
                 >
-                  {searchFilterContext.getActiveFilters().length}
+                  {searchFilterContext.getActiveFilterCount()}
                 </div>
               ) : (
                 <></>
@@ -213,9 +199,10 @@ export default function SearchBar({
                     <ToggleGroup
                       value={filters?.planetQuality ?? []}
                       onValueChange={(selectedQualities) => {
+                        // This filter will be considered active if more than 1 item was passed to selectedQualities
                         searchFilterContext.setFilterActive(
                           SearchFilterKeys.PLANET_QUALITIES,
-                          true,
+                          selectedQualities.length > 0,
                         );
 
                         console.log(selectedQualities, filters?.planetQuality);
@@ -341,9 +328,10 @@ export default function SearchBar({
                     <ToggleGroup
                       value={filters?.planetTerrain ?? []}
                       onValueChange={(selectedTerrains) => {
+                        // This filter will be set to active if at least 1 terrain option was selected
                         searchFilterContext.setFilterActive(
                           SearchFilterKeys.PLANET_TERRAINS,
-                          true,
+                          selectedTerrains.length > 0,
                         );
 
                         console.log(selectedTerrains, filters?.planetTerrain);
@@ -491,9 +479,10 @@ export default function SearchBar({
                     <ToggleGroup
                       value={filters?.planetTemperature ?? []}
                       onValueChange={(selectedTemperatures) => {
+                        // This filter will be set to active if at least 1 climate option was selected
                         searchFilterContext.setFilterActive(
                           SearchFilterKeys.PLANET_TEMPERATURES,
-                          true,
+                          selectedTemperatures.length > 0,
                         );
 
                         console.log(
@@ -669,7 +658,7 @@ export default function SearchBar({
             });
           }}
         >
-          <SelectTrigger className="ml-2 rounded-full border-2 border-white bg-pbdark-850 bg-primary text-primary-foreground hover:bg-primary/80">
+          <SelectTrigger className="ml-2 rounded-full border-2 border-white bg-pbdark-850 bg-primary text-primary-foreground transition-none hover:bg-primary/80">
             <span className="flex items-center justify-center">
               <p className="hidden text-white sm:block">Sort</p>
             </span>
@@ -677,7 +666,7 @@ export default function SearchBar({
           <SelectContent>
             <SelectGroup>
               <SelectLabel className="flex justify-between">
-                <h2 className="text-left self-start">Sort by </h2>
+                <h2 className="self-start text-left">Sort by </h2>
                 <span>
                   <SortDesc
                     onClick={() =>
