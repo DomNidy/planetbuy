@@ -18,6 +18,7 @@ import {
   ClipboardList,
   Container,
   Gavel,
+  History,
   LogOut,
   ShoppingBagIcon,
 } from "lucide-react";
@@ -129,6 +130,15 @@ function AuthDisplay() {
                 >
                   <ClipboardList className="mr-2 h-4 w-4" />
                   <span>Your Listings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                <Link
+                  href={`${getBaseUrl()}/transactions/`}
+                  className="flex w-full items-center"
+                >
+                  <History className="mr-2 h-4 w-4" />
+                  <span>Transaction History</span>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

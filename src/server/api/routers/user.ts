@@ -222,7 +222,45 @@ export const userRouter = createTRPCRouter({
   // * getUsersListings: publicProcedure.query(async ({ctx, input}) => {})
 
   // Return transaction history of the user who requested the endpoint (support pagination with this)
-  // * getTransactionHistory: protectedProcedure.query(async ({ ctx }) => {}),
+  getTransactionHistory: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1, "Cannot fetch less than 1 item").optional(),
+        cursor: z
+          .object({
+            transactionId: z.string(),
+          })
+          .nullish(),
+      }),
+    )
+    .query(async ({ input: { cursor, limit = 10 }, ctx }) => {
+      return await ctx.db.transaction.findMany({
+        where: { buyerId: ctx.session.user.id },
+        take: limit,
+        orderBy: { timestamp: "desc" },
+        // Using a cursor over composite index
+        cursor: cursor
+          ? {
+              id_buyerId: {
+                id: ctx.session.user.id,
+                buyerId: cursor.transactionId,
+              },
+            }
+          : undefined,
+        select: {
+          transactionTotal: true,
+          timestamp: true,
+          id: true,
+          purchasedItems: {
+            select: {
+              snapshotPlanetName: true,
+              snapshotOwnerName: true,
+              snapshotListPrice: true,
+            },
+          },
+        },
+      });
+    }),
 
   // Create a planet listing for a user (this user must own the planet)
   // * createPlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})
@@ -232,7 +270,7 @@ export const userRouter = createTRPCRouter({
 
   // Delete a planet listing for a user (this user must own the planet the listing is asssociated with, and the user ids must match)
   // * deletePlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})
-  
+
   addItemToCart: protectedProcedure
     .input(z.object({ listingId: z.string() }))
     .mutation(async ({ input: { listingId }, ctx }) => {

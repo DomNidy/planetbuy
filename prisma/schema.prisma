@@ -108,6 +108,9 @@ model Transaction {
     buyer   User?   @relation(fields: [buyerId], references: [id], onDelete: SetNull)
     buyerId String?
 
+    // When this transaction was created
+    timestamp DateTime @default(now())
+
     purchasedItems   PlanetTransaction[]
     transactionTotal Float
 

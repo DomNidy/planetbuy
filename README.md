@@ -15,7 +15,7 @@ The table below contains the features Planetbuy plans to implement, and the stat
 | Purchase a planet |✔️|
 | Advanced querying & filtering for planet listings |✔️|
 | Re-list purchased planets on the marketplace |🚧|
-| View prior transaction history |❌|
+| View prior transaction history |🚧|
 
 - ✔️ indicates a feature has been fully implemented.
 - ❌ indicates implementation of a feature has not yet begun.
