@@ -13,7 +13,7 @@ import SearchFilterProvider from "~/context/SearchFilterContext";
 export default function Home() {
   const [filters, setFilters] = useState<
     RouterInputs["planet"]["getPlanetListings"]["filters"]
-  >({});
+  >({ sortBy: { order: "desc", property: "LIST_DATE" } });
 
   //
   const debouncedFilters = useDebounce(filters, 500);

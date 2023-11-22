@@ -4,6 +4,7 @@ import {
   PlanetTerrain,
 } from "@prisma/client";
 import { z } from "zod";
+import { env } from "~/env.mjs";
 
 export const guestNameSchema = z
   .string()
@@ -14,4 +15,12 @@ export const planetImagePropertiesSchema = z.object({
   planetTemperature: z.nativeEnum(PlanetTemperatureRange),
   planetTerrain: z.nativeEnum(PlanetTerrain),
   planetQuality: z.nativeEnum(PlanetQuality),
+});
+
+export const createPlanetListingSchema = z.object({
+  planetId: z.string(),
+  listPrice: z.coerce
+    .number()
+    .min(env.NEXT_PUBLIC_MIN_LISTING_PRICE)
+    .max(env.NEXT_PUBLIC_MAX_LISTING_PRICE),
 });

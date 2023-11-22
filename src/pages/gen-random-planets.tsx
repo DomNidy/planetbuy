@@ -176,7 +176,7 @@ export default function GenerateRandom() {
               </FormItem>
             )}
           />
-          <Button type="submit">Create listing</Button>
+          <Button type="submit">Create planets</Button>
         </form>
       </Form>
     </div>

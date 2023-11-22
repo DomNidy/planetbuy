@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 
+// TODO: Show all listings a user owns
 export default function ListingsPage() {
   const router = useRouter();
 

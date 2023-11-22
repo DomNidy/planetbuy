@@ -1,10 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { TRPCClientError, TRPCClientErrorLike } from "@trpc/client";
-import { Check, ShoppingCart, X } from "lucide-react";
+import { Check, ShoppingCart } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useContext, useEffect } from "react";
-import Zod, { ZodError, ZodErrorMap } from "zod";
 import { Button } from "~/components/ui/button";
 import { useToast } from "~/components/ui/use-toast";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
@@ -25,8 +23,6 @@ export default function Checkout() {
       ]);
     },
     onError(err) {
-      console.log(err?.data?.zodError?.fieldErrors.listingIDS);
-
       if (err?.data?.zodError?.fieldErrors.listingIDS) {
         toast({
           title: "Cart item count error",

@@ -23,6 +23,10 @@ export function formatNumberToStringWithCommas(num: number | string): string {
   const inputString = typeof num === "number" ? num.toString() : num;
   let formattedString = "";
 
+  if (!inputString) {
+    return "";
+  }
+
   const decimalIndex = inputString.indexOf(".");
   const integerPart =
     decimalIndex >= 0 ? inputString.slice(0, decimalIndex) : inputString;
@@ -71,7 +75,11 @@ export function formatLargeNumberToString(num: number) {
   // Convert input to num
   let convertedToNumber = Number(num);
 
-  if (isNaN(convertedToNumber) || typeof convertedToNumber != "number") {
+  if (
+    isNaN(convertedToNumber) ||
+    typeof convertedToNumber != "number" ||
+    !num
+  ) {
     return "";
   }
 

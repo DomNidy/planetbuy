@@ -2,6 +2,8 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
+import { env } from "~/env.mjs";
+import { createPlanetListingSchema } from "~/utils/schemas";
 
 export const userRouter = createTRPCRouter({
   getBalance: protectedProcedure.query(({ ctx }) => {
@@ -216,7 +218,23 @@ export const userRouter = createTRPCRouter({
   // TODO: Begin implementing endpoints to support creating planet listings from items users own
 
   // Return planets owned by the user who requested the endpoint (support pagination with this)
-  // * getUsersPlanets: protectedProcedure.query(async ({ctx}) => {})
+  getUsersPlanets: protectedProcedure
+    .input(
+      z.object({
+        cursor: z.object({ planetId: z.string() }).nullish(),
+        limit: z.number().min(1, "Cannot return less than 1 result").optional(),
+      }),
+    )
+    .query(async ({ input: { cursor, limit = 10 }, ctx }) => {
+      return await ctx.db.planet.findMany({
+        where: {
+          ownerId: ctx.session.user.id,
+        },
+        cursor: cursor ? { id: cursor.planetId } : undefined,
+        take: limit,
+        include: { planetImage: true, listing: true, owner: true },
+      });
+    }),
 
   // Return a users listings (specified by the user id) the endpoint (support pagination with this)
   // * getUsersListings: publicProcedure.query(async ({ctx, input}) => {})
@@ -263,7 +281,34 @@ export const userRouter = createTRPCRouter({
     }),
 
   // Create a planet listing for a user (this user must own the planet)
-  // * createPlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})
+  createPlanetListing: protectedProcedure
+    .input(createPlanetListingSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Lookup the planet via planetId and sure the owner is the same as the user who requested the endpoint
+      const planet = await ctx.db.planet.findUnique({
+        where: {
+          id: input.planetId,
+          ownerId: ctx.session.user.id,
+        },
+      });
+
+      if (!planet) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          cause: "User does not own a planet with the requested planet id",
+          message: "This planet does not belong to you, or does not exist.",
+        });
+      }
+
+      // Create the listing for the planet
+      await ctx.db.listing.create({
+        data: {
+          listPrice: input.listPrice,
+          listDate: new Date(),
+          planetId: planet.id,
+        },
+      });
+    }),
 
   // Update a planet listing for a user (this user must own the planet the listing is associated with, and the user ids must match)
   // * updatePlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})

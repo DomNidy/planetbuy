@@ -21,6 +21,11 @@ The table below contains the features Planetbuy plans to implement, and the stat
 - ❌ indicates implementation of a feature has not yet begun.
 - 🚧 indicates a feature is in the process of being implemented.
 
+## Todo:
+- Show a toast indicating an error when a user attempts to add an item they own to their cart
+- Design icons indicating planet quality, these can be displayed on PlanetCards on the main index page when the screen width is low (provides clearance for other UI elements)
+- Clean up styling & css, there are some elements with arbitrary placeholder styles
+
 ## Tech used
 
 - [Next.js](https://nextjs.org)

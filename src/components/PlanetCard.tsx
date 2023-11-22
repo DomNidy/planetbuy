@@ -91,7 +91,7 @@ export default function PlanetCard({
           </div>
         ) : (
           <>
-            {!isUserOwner && variant === "listing" ? (
+            {!isUserOwner && variant === "listing" && (
               <>
                 <ShoppingCartIcon
                   color="white"
@@ -113,7 +113,8 @@ export default function PlanetCard({
                   fill="rgba(255,255,255,0.3)"
                 />
               </>
-            ) : (
+            )}
+            {isUserOwner && variant === "listing" && (
               <p className="absolute right-1 top-1 cursor-default rounded-lg bg-pbdark-850 p-3 text-center  font-semibold text-pbtext-500">
                 You own this
               </p>
