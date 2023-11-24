@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ShoppingCartIcon, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -6,10 +7,12 @@ import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
 import { env } from "~/env.mjs";
+
 import { getBaseUrl, type RouterOutputs } from "~/utils/api";
 import {
   formatLargeNumberToString,
   formatNumberToStringWithCommas,
+  getPlanetQualitySVG,
 } from "~/utils/utils";
 
 export default function PlanetCard({
@@ -130,36 +133,11 @@ export default function PlanetCard({
         } `}
       >
         <div className="flex w-full justify-between">
-          <h2 className="text-[22px] font-semibold leading-6 tracking-tighter text-pbtext-500 ">
+          <h2 className=" text-[22px] font-semibold leading-6 tracking-tighter text-pbtext-500 ">
             {planetData.planet?.name}
           </h2>
-          <h2
-            className={`text-[22px] font-semibold leading-6 tracking-tighter 
-            ${
-              planetData.planet?.quality === "COMMON"
-                ? "text-pbaccent-common"
-                : ""
-            }
-            ${
-              planetData.planet?.quality === "UNIQUE"
-                ? "text-pbaccent-uncommon"
-                : ""
-            }
-            ${planetData.planet?.quality === "RARE" ? "text-pbaccent-rare" : ""}
-            ${
-              planetData.planet?.quality === "OUTSTANDING"
-                ? "text-pbaccent-outstanding"
-                : ""
-            }
-            ${
-              planetData.planet?.quality === "PHENOMENAL"
-                ? "text-pbaccent-phenomenal"
-                : ""
-            }
-            `}
-          >
-            {planetData.planet?.quality}
-          </h2>
+
+          <Image src={getPlanetQualitySVG(planetData.planet.quality)} alt="" />
         </div>
 
         <h3 className="text-[18px] tracking-tighter text-pbtext-700">

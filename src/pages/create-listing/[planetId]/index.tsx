@@ -23,6 +23,8 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { Check } from "lucide-react";
+import Link from "next/link";
 
 export default function CreateListingPage() {
   const router = useRouter();
@@ -70,6 +72,24 @@ export default function CreateListingPage() {
 
   return (
     <div className="flex min-h-screen w-full justify-center bg-pbdark-800 px-4  md:px-16 lg:px-44">
+      {createListing.status === "success" && (
+        <div className="flex flex-col  items-center justify-center gap-2 text-2xl font-medium text-pbtext-500 sm:text-3xl">
+          <div className="flex flex-row">
+            <Check
+              className="aspect-square h-7 w-7 rounded-full bg-green-500 sm:h-8 sm:w-8"
+              color="white"
+            />
+            <p>Listing created</p>{" "}
+          </div>
+
+          <Link
+            href={`${getBaseUrl()}/listing/${createListing.data.id}`}
+            className="text-base text-muted"
+          >
+            Take me there
+          </Link>
+        </div>
+      )}
       <div className="mt-36 flex  h-fit  w-fit  flex-col rounded-lg  p-4">
         <div className="flex  flex-col items-center gap-4 lg:flex-row lg:items-start">
           <div

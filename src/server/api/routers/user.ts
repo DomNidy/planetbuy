@@ -226,7 +226,7 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input: { cursor, limit = 10 }, ctx }) => {
-      return await ctx.db.planet.findMany({
+      const items = await ctx.db.planet.findMany({
         where: {
           ownerId: ctx.session.user.id,
         },
@@ -234,6 +234,13 @@ export const userRouter = createTRPCRouter({
         take: limit,
         include: { planetImage: true, listing: true, owner: true },
       });
+
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (items.length > limit) {
+        const nextItem = items.pop();
+        nextCursor = { planetId: nextItem!.id };
+      }
+      return { items, nextCursor };
     }),
 
   // Return a users listings (specified by the user id) the endpoint (support pagination with this)
@@ -301,13 +308,16 @@ export const userRouter = createTRPCRouter({
       }
 
       // Create the listing for the planet
-      await ctx.db.listing.create({
+      const newListing = await ctx.db.listing.create({
         data: {
           listPrice: input.listPrice,
           listDate: new Date(),
           planetId: planet.id,
         },
+        select: { id: true },
       });
+
+      return newListing;
     }),
 
   // Update a planet listing for a user (this user must own the planet the listing is associated with, and the user ids must match)

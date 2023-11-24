@@ -1,3 +1,9 @@
+import commonIcon from "public/common-icon.svg";
+import uncommonIcon from "public/uncommon-icon.svg";
+import rareIcon from "public/rare-icon.svg";
+import outstandingIcon from "public/outstanding-icon.svg";
+import phenomenalIcon from "public/phenomenal-icon.svg";
+import { type StaticImport } from "next/dist/shared/lib/get-img-props";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { type planetImagePropertiesSchema } from "./schemas";
@@ -308,4 +314,20 @@ export function clampNumber(num: number, min: number, max: number) {
   console.log(`Clamping number ${num} between min of ${min} and max of ${max}`);
   console.log(`Clamp result ${Math.min(Math.max(num, min), max)}`);
   return Math.min(Math.max(num, min), max);
+}
+
+// When provided with a PlanetQuality, return the icon which coresponds to that quality
+export function getPlanetQualitySVG(quality: PlanetQuality): StaticImport {
+  switch (quality) {
+    case "COMMON":
+      return commonIcon as StaticImport;
+    case "UNIQUE":
+      return uncommonIcon as StaticImport;
+    case "RARE":
+      return rareIcon as StaticImport;
+    case "OUTSTANDING":
+      return outstandingIcon as StaticImport;
+    case "PHENOMENAL":
+      return phenomenalIcon as StaticImport;
+  }
 }

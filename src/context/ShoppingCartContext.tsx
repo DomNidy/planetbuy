@@ -143,6 +143,14 @@ export default function ShoppingCartProvider({
         variant: "destructive",
       });
       return;
+    } else if (planetData?.planet.owner?.id === session.data?.user.id) {
+      toast({
+        title: "You own this planet",
+        description:
+          "This is your own listing, you cannot add it to your cart.",
+        variant: "destructive",
+      });
+      return;
     }
 
     console.log(`Adding item with id ${planetData.planet.listing.id} to cart.`);
