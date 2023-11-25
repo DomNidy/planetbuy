@@ -236,7 +236,7 @@ export const userRouter = createTRPCRouter({
       });
 
       let nextCursor: typeof cursor | undefined = undefined;
-      if (items.length > limit) {
+      if (items.length === limit) {
         const nextItem = items.pop();
         nextCursor = { planetId: nextItem!.id };
       }

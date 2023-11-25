@@ -1,5 +1,6 @@
+import { c } from "@vercel/blob/dist/put-96a1f07e";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import PlanetCard from "~/components/PlanetCard";
 import { api, getBaseUrl } from "~/utils/api";
 import { isScrolledToBottom } from "~/utils/utils";
@@ -8,43 +9,44 @@ export default function CreateListing() {
   // TODO: Implement infinite scrolling here or a different system of fetching planets
   // TODO: Review this infinte scrolling implementation
   const userPlanets = api.user.getUsersPlanets.useInfiniteQuery(
-    { limit: 10 },
-    { getNextPageParam: (lastPage) => lastPage.nextCursor, staleTime: 30000 },
+    { limit: 15 },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor, staleTime: 30000},
   );
 
+  // Assign a ref to the last user planet element rendered
+  const lastElementRef = useRef<HTMLDivElement>(null);
+
+  // Add an intersection observer to the last user planet element rendered
   useEffect(() => {
-    // TODO: Review this and ensure it is properly working
-    function handleScroll() {
-      if (
-        isScrolledToBottom(150) === true &&
-        userPlanets.isFetchingNextPage === false &&
-        userPlanets.hasNextPage === true
-      ) {
-        console.log("Fetching next page");
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        console.log("Is intersecting! Fetching next page!");
+        console.log(userPlanets.hasNextPage)
         void userPlanets.fetchNextPage();
       }
+    });
+
+    if (lastElementRef.current) {
+      observer.observe(lastElementRef.current);
     }
 
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  });
+    return () => observer.disconnect();
+  }, [lastElementRef, userPlanets]);
 
-  // TODO: Review duplicate key issue (planet.id is being used twice)
   return (
     <div className="flex min-h-screen  flex-col items-center gap-4 bg-pbdark-800 pt-32 ">
-      <div className="flex w-full flex-col gap-8 px-10 sm:w-[500px]">
+      <div className="flex w-full flex-col gap-4 p-4 px-10 sm:w-[500px]">
         {userPlanets.data?.pages ? (
           userPlanets.data.pages.map((page) =>
             page.items.map((planet) => {
               if (planet.listing) {
-                return <></>;
+                return;
               }
               return (
                 <div
-                  className="flex w-full flex-row items-stretch justify-between "
+                  className="flex w-full flex-row items-stretch justify-between bg-pbdark-850 rounded-lg"
                   key={planet.id}
+                  ref={lastElementRef}
                 >
                   <PlanetCard
                     planetData={{
@@ -53,7 +55,6 @@ export default function CreateListing() {
                       planet: planet,
                     }}
                     variant="showcase"
-                    key={planet.id}
                   />
                   {/* TODO: STYLE THIS LINK*/}
                   <Link

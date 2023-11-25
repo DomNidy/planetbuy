@@ -15,7 +15,6 @@ export default function Home() {
     RouterInputs["planet"]["getPlanetListings"]["filters"]
   >({ sortBy: { order: "desc", property: "LIST_DATE" } });
 
-  //
   const debouncedFilters = useDebounce(filters, 500);
 
   //* Planet listing infinite scroll code
