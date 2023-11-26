@@ -9,12 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import {
-  type Dispatch,
-  type SetStateAction,
-  useContext,
-  useEffect,
-} from "react";
+import { type Dispatch, type SetStateAction, useContext } from "react";
 import { PriceRangeSlider } from "./PriceRangeSlider";
 import { SurfaceAreaRangeSlider } from "./SurfaceAreaRangeSlider";
 import { env } from "~/env.mjs";
@@ -663,7 +658,7 @@ export default function SearchBar({
               <p className="hidden text-white sm:block">Sort</p>
             </span>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="w-fit">
             <SelectGroup>
               <SelectLabel className="flex justify-between">
                 <h2 className="self-start text-left">Sort by </h2>

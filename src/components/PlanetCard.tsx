@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { ShoppingCartIcon, X } from "lucide-react";
+import { ShoppingCartIcon, Star, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +12,6 @@ import { getBaseUrl, type RouterOutputs } from "~/utils/api";
 import {
   formatLargeNumberToString,
   formatNumberToStringWithCommas,
-  getPlanetQualitySVG,
 } from "~/utils/utils";
 
 export default function PlanetCard({
@@ -61,7 +60,7 @@ export default function PlanetCard({
             blurDataURL={`${env.NEXT_PUBLIC_BUCKET_URL}/${planetData?.planet?.planetImage.bucketPath}`}
             placeholder="blur"
             fill
-            className="cursor-pointer"
+            className="cursor-pointer rounded-lg"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         )}
@@ -132,12 +131,37 @@ export default function PlanetCard({
             : `${getBaseUrl()}/planet/${planetData.planet?.id}`
         } `}
       >
-        <div className="flex w-full justify-between">
+        <div className="flex w-full justify-between ">
           <h2 className=" text-[22px] font-semibold leading-6 tracking-tighter text-pbtext-500 ">
             {planetData.planet?.name}
           </h2>
 
-          <Image src={getPlanetQualitySVG(planetData.planet.quality)} alt="" />
+          <div className="flex basis-6 items-start justify-end">
+            <Star
+              width={20}
+              height={20}
+              className={` ${
+                planetData.planet.quality === "COMMON" &&
+                "fill-pbaccent-common stroke-pbaccent-common"
+              }
+              ${
+                planetData.planet.quality === "UNIQUE" &&
+                "fill-pbaccent-uncommon stroke-pbaccent-uncommon"
+              }
+              ${
+                planetData.planet.quality === "RARE" &&
+                "fill-pbaccent-rare stroke-pbaccent-rare"
+              }
+              ${
+                planetData.planet.quality === "OUTSTANDING" &&
+                "fill-pbaccent-outstanding stroke-pbaccent-outstanding"
+              }
+              ${
+                planetData.planet.quality === "PHENOMENAL" &&
+                "fill-pbaccent-phenomenal stroke-pbaccent-phenomenal"
+              }`}
+            />
+          </div>
         </div>
 
         <h3 className="text-[18px] tracking-tighter text-pbtext-700">
