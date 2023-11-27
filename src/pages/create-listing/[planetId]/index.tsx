@@ -41,7 +41,7 @@ export default function CreateListingPage() {
       toast({
         title: "Failed to create planet listing",
         description:
-          "Please ensure you own the planet you are trying to sell and that the listing settings are configured properly.",
+          "An error occurred while creating your planet listing. Please try again later.",
         variant: "destructive",
       });
     },
@@ -95,7 +95,7 @@ export default function CreateListingPage() {
       {createListing.status === "loading" && (
         <div className="flex flex-col  items-center justify-center gap-2 text-2xl font-medium text-pbtext-500 sm:text-3xl">
           <div className="flex flex-row items-center">
-    <CircleLoader color="white" />
+            <CircleLoader color="white" />
           </div>
         </div>
       )}

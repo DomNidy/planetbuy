@@ -6,7 +6,7 @@ import { api, getBaseUrl } from "~/utils/api";
 
 export default function CreateListing() {
   const userPlanets = api.user.getUsersPlanets.useInfiniteQuery(
-    { limit: 15 },
+    { limit: 15, returnPlanetsWithListings: false },
     { getNextPageParam: (lastPage) => lastPage.nextCursor, staleTime: 30000 },
   );
 
