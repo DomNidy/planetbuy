@@ -22,11 +22,18 @@ export default function Checkout() {
         { type: "query" },
       ]);
     },
+    // TODO: Handle the error for when a user tries to checkout with an empty cart or cart is too large
     onError(err) {
-      if (err?.data?.zodError?.fieldErrors.listingIDS) {
+      if (err.data?.code === "PRECONDITION_FAILED") {
         toast({
-          title: "Cart item count error",
-          description: err?.data?.zodError?.fieldErrors.listingIDS,
+          title: "Failed to checkout",
+          description: "Invalid cart size, please try removing some items.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Failed to checkout",
+          description: "Something went wrong, please try again later",
           variant: "destructive",
         });
       }
@@ -96,11 +103,7 @@ export default function Checkout() {
                 shoppingCart.cart &&
                 Object.keys(shoppingCart.cart).length > 0
               ) {
-                checkoutCart.mutate({
-                  listingIDS: Object.values(shoppingCart.cart).map(
-                    (item) => item.listing.id,
-                  ),
-                });
+                checkoutCart.mutate();
               }
             }}
           >

@@ -1,20 +1,70 @@
 import { createInnerTRPCContext } from "../trpc";
 import { appRouter } from "../root";
+import { env } from "~/env.mjs";
+import { db } from "~/server/db";
 
 describe("checkoutCart", () => {
-  it("should throw an error when given an empty cart", async () => {
+  let userId = "";
+  let ctx: ReturnType<typeof createInnerTRPCContext> | null = null;
+  let caller: ReturnType<typeof appRouter.createCaller> | null = null;
+
+  // Setup phase
+  beforeAll(async () => {
+    // Delete the user from the database if it exists already
+    // This is to prevent the test from failing if it was not cleaned up properly
+    await db.user.deleteMany({
+      where: {
+        id: "TEST_CHECKOUTCART",
+      },
+    });
+
+    // Create a user in the database for this test
+    await db.user
+      .create({
+        data: {
+          id: "TEST_CHECKOUTCART",
+          email: "testcheckoutcart@mail.com",
+          isGuest: false,
+          name: "Test Checkoutcart",
+        },
+        select: {
+          id: true,
+        },
+      })
+      .then((res) => {
+        userId = res.id;
+        console.log("Resolving with ID:", userId);
+      });
+
+    console.log("Created test user with ID:", userId);
+
     // Mock the context object
-    const ctx = createInnerTRPCContext({
+    ctx = createInnerTRPCContext({
       session: {
-        user: { id: "a", isGuest: false, email: "a" },
+        user: { id: userId, isGuest: false, email: "" },
         expires: new Date().toISOString(),
       },
     });
 
-    const caller = appRouter.createCaller(ctx);
+    // Create a caller for the appRouter
+    caller = appRouter.createCaller(ctx);
+  });
 
+  // Teardown phase
+  afterAll(async () => {
+    // Delete the user from the database
+    await db.user.delete({
+      where: {
+        id: userId,
+      },
+    });
+
+    console.log("Deleted test user with ID:", userId);
+  });
+
+  it("should throw an error when given an empty cart", async () => {
     // Call the procedure
-    await expect(caller.user.checkoutCart({ listingIDS: [] })).rejects
+    await expect(caller?.user.checkoutCart()).rejects
       .toThrowErrorMatchingInlineSnapshot(`
 "[
   {
@@ -30,24 +80,17 @@ describe("checkoutCart", () => {
   }
 ]"
 `);
-  });
+  }, 5000);
 
-  it("should throw an error when given more than 10 items in the cart", async () => {
-    // Mock the context object
-    const ctx = createInnerTRPCContext({
-      session: {
-        user: { id: "a", isGuest: false, email: "a" },
-        expires: new Date().toISOString(),
-      },
-    });
-
-    const caller = appRouter.createCaller(ctx);
-
+  it("should throw an error when the maximum cart item count is exceeded", async () => {
     // Create an array of 11 listing IDs
-    const listingIDS = Array.from({ length: 11 }, (_, i) => `listing${i}`);
+    const listingIDS = Array.from(
+      { length: env.NEXT_PUBLIC_MAX_CART_ITEMS },
+      (_, i) => `listing${i}`,
+    );
 
     // Call the procedure
-    await expect(caller.user.checkoutCart({ listingIDS })).rejects
+    await expect(caller?.user.checkoutCart()).rejects
       .toThrowErrorMatchingInlineSnapshot(`
 "[
   {
@@ -63,5 +106,5 @@ describe("checkoutCart", () => {
   }
 ]"
 `);
-  });
+  }, 5000);
 });

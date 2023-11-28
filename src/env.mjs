@@ -14,6 +14,7 @@ export const env = createEnv({
         (str) => !str.includes("YOUR_MYSQL_URL_HERE"),
         "You forgot to change the default URL"
       ),
+    DATABASE_TEST_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -33,7 +34,6 @@ export const env = createEnv({
     ),
     DISCORD_SECRET: z.string(),
     DISCORD_ID: z.string(),
-
   },
 
   /**
@@ -49,6 +49,7 @@ export const env = createEnv({
     NEXT_PUBLIC_MAX_LISTING_PRICE: z.number(),
     NEXT_PUBLIC_MIN_SURFACE_AREA: z.number(),
     NEXT_PUBLIC_MAX_SURFACE_AREA: z.number(),
+    NEXT_PUBLIC_MAX_CART_ITEMS: z.number().default(10)
   },
 
   /**
@@ -57,6 +58,7 @@ export const env = createEnv({
    */
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_TEST_URL: process.env.DATABASE_TEST_URL,
     NODE_ENV: process.env.NODE_ENV,
     CRON_SECRET: process.env.CRON_SECRET,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
@@ -71,7 +73,8 @@ export const env = createEnv({
 
 
     //* Store configuration
-
+    // The maximum number of items a user can have in their cart
+    NEXT_PUBLIC_MAX_CART_ITEMS: process.env.NEXT_PUBLIC_MAX_CART_ITEMS ? parseInt(process.env.NEXT_PUBLIC_MAX_CART_ITEMS.replace(/_/g, '')) : 10,
     // Minimum price an item can be listed for
     NEXT_PUBLIC_MIN_LISTING_PRICE: process.env.NEXT_PUBLIC_MIN_LISTING_PRICE ? parseFloat(process.env.NEXT_PUBLIC_MIN_LISTING_PRICE.replace(/_/g, '')) : 100,
     // Maximum price an item can be listing for
