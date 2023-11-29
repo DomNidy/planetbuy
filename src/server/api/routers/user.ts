@@ -11,6 +11,7 @@ export const userRouter = createTRPCRouter({
       select: { balance: true },
     });
   }),
+<<<<<<< HEAD
 
   checkoutCart: protectedProcedure
     .input(z.object({}))
@@ -35,6 +36,29 @@ export const userRouter = createTRPCRouter({
       > = {};
       // Sum of all prices in cart
       let cartTotal = 0;
+=======
+  checkoutCart: protectedProcedure.mutation(async ({ input, ctx }) => {
+    console.log("\n\nStarting checkout mutation\n\n");
+    // Object which maps each planet ID to properties of the planet
+    // The key in this map is the listingId
+    // This is used so we dont have to send out multiple queries to gather data, we can just get all data we need here
+    const planetDataMap: Record<
+      string,
+      {
+        listPrice: number;
+        listingId: string;
+        planet: {
+          id: string;
+          name: string;
+          ownerId?: string;
+          ownerName?: string;
+          ownerEmail?: string;
+        };
+      }
+    > = {};
+    // Sum of all prices in cart
+    let cartTotal = 0;
+>>>>>>> reverted
 
       // Get all cart items for buyers' cart
       const buyer = await ctx.db.user.findUniqueOrThrow({
@@ -82,6 +106,7 @@ export const userRouter = createTRPCRouter({
         cartTotal += item.listing.listPrice;
       });
 
+<<<<<<< HEAD
       // If the buyer has insufficient balance to purchase items return
       if (buyer.balance < cartTotal) {
         throw new TRPCError({
@@ -93,6 +118,90 @@ export const userRouter = createTRPCRouter({
 
       // Create transaction entry
       const transaction = await ctx.db.transaction.create({
+=======
+    // Wrap entire procedure in a transaction to ensure atomicity
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [createPlanetTransactions, findRecentPlanetTransactions] =
+      await ctx.db.$transaction([
+        // 1. Create planet transaction objects, these should be connected to the
+        // planets they are assosciated with, and the current transaction
+        ctx.db.planetTransaction.createMany({
+          data: Object.values(planetDataMap).map((data) => {
+            return {
+              snapshotOwnerName:
+                data.planet.ownerName ?? data.planet.ownerEmail ?? "unknown",
+              snapshotListPrice: data.listPrice,
+              snapshotPlanetName: data.planet.name,
+              planetId: data.planet.id,
+              transactionId: transaction.id,
+              buyerId: ctx.session.user.id,
+              startDate: new Date(),
+            };
+          }),
+          skipDuplicates: true,
+        }),
+
+        // TODO: Review this query,
+        // 2. Find the most recent planet transactions(besides the one we created) associated with each planet we are purchasing, and return their ids
+        // We will update the "endTime" prop of each of these prior transactions (if they exist).
+        // Note: planetTransaction entries can be thought of as storing a planets "transaction history" because of this,
+        // we store the start and endtime in this planet transaction to store how long a user owned something for, or who owned a planet at X time
+        ctx.db.planetTransaction.findMany({
+          where: {
+            planetId: {
+              in: Object.values(planetDataMap).map(
+                (planetData) => planetData.planet.id,
+              ),
+            },
+            endDate: null ?? undefined,
+          },
+          select: { id: true },
+          orderBy: { startDate: "desc" },
+          // TODO: The take parameter here seems to not be working as intended
+          // TODO: The take parameter was intended to take the first item from each of the returned related planetTransaction sets
+          // TODO: However, it is only returning the most recent transaction from the combined result set of all related planet transactions
+          take: 1,
+        }),
+
+        // 3. Decrement the users balance by the cart total
+        ctx.db.user.update({
+          where: { id: ctx.session.user.id },
+          data: { balance: { decrement: cartTotal } },
+        }),
+
+        // 4. Set the owner field of each purchased planet to the user who just bought them
+        ctx.db.planet.updateMany({
+          where: {
+            id: {
+              in: Object.values(planetDataMap).map(
+                (planetData) => planetData.planet.id,
+              ),
+            },
+          },
+          data: { ownerId: ctx.session.user.id },
+        }),
+
+        // 5. Delete planet listings for the planets we purchased
+        ctx.db.listing.deleteMany({
+          where: {
+            id: {
+              in: Object.values(planetDataMap).map((pd) => pd.listingId),
+            },
+          },
+        }),
+      ]);
+
+    // TODO: PROBLEM: This code updates the endDate of planetTransaction records that we just created through the checkout procedure
+    // TODO: This is incorrect behavior, we should only be updating the endDate of records that did not previously exist
+    // TODO: This is likely due to the findRecentPlanetTransactions query returning incorrect records, (review that query)
+    // If we found planetTransactions that need updated
+    if (findRecentPlanetTransactions.length > 0) {
+      // Update the endTime prop of each previously existing planetTransaction to the current time
+      await ctx.db.planetTransaction.updateMany({
+        where: {
+          id: { in: findRecentPlanetTransactions.map((tx) => tx.id) },
+        },
+>>>>>>> reverted
         data: {
           buyer: { connect: { id: buyer.id } },
           transactionTotal: cartTotal,
@@ -225,42 +334,33 @@ export const userRouter = createTRPCRouter({
     return itemQuery.cartItems;
   }),
 
+  // TODO: Begin implementing endpoints to support creating planet listings from items users own
+
   // Return planets owned by the user who requested the endpoint (support pagination with this)
   getUsersPlanets: protectedProcedure
     .input(
       z.object({
         cursor: z.object({ planetId: z.string() }).nullish(),
         limit: z.number().min(1, "Cannot return less than 1 result").optional(),
-        returnPlanetsWithListings: z.boolean().optional().default(true),
       }),
     )
-    .query(
-      async ({
-        input: { cursor, limit = 10, returnPlanetsWithListings },
-        ctx,
-      }) => {
-        const items = await ctx.db.planet.findMany({
-          where: {
-            ownerId: ctx.session.user.id,
-            ...(!returnPlanetsWithListings
-              ? {
-                  listing: null,
-                }
-              : {}),
-          },
-          cursor: cursor ? { id: cursor.planetId } : undefined,
-          take: limit,
-          include: { planetImage: true, listing: true, owner: true },
-        });
+    .query(async ({ input: { cursor, limit = 10 }, ctx }) => {
+      const items = await ctx.db.planet.findMany({
+        where: {
+          ownerId: ctx.session.user.id,
+        },
+        cursor: cursor ? { id: cursor.planetId } : undefined,
+        take: limit,
+        include: { planetImage: true, listing: true, owner: true },
+      });
 
-        let nextCursor: typeof cursor | undefined = undefined;
-        if (items.length === limit) {
-          const nextItem = items.pop();
-          nextCursor = { planetId: nextItem!.id };
-        }
-        return { items, nextCursor };
-      },
-    ),
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (items.length === limit) {
+        const nextItem = items.pop();
+        nextCursor = { planetId: nextItem!.id };
+      }
+      return { items, nextCursor };
+    }),
 
   // Return a users listings (specified by the user id) the endpoint (support pagination with this)
   // * getUsersListings: publicProcedure.query(async ({ctx, input}) => {})
@@ -316,7 +416,6 @@ export const userRouter = createTRPCRouter({
           id: input.planetId,
           ownerId: ctx.session.user.id,
         },
-        select: { id: true, listing: true },
       });
 
       if (!planet) {
@@ -324,14 +423,6 @@ export const userRouter = createTRPCRouter({
           code: "NOT_FOUND",
           cause: "User does not own a planet with the requested planet id",
           message: "This planet does not belong to you, or does not exist.",
-        });
-      }
-
-      if (planet.listing) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          cause: "User already has a listing for this planet",
-          message: "You already have a listing for this planet.",
         });
       }
 
