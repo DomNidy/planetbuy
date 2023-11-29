@@ -2,7 +2,6 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
-import { env } from "~/env.mjs";
 import { createPlanetListingSchema } from "~/utils/schemas";
 
 export const userRouter = createTRPCRouter({
@@ -13,201 +12,203 @@ export const userRouter = createTRPCRouter({
     });
   }),
 
-  checkoutCart: protectedProcedure.mutation(async ({ ctx }) => {
-    console.log("\n\nStarting checkout mutation\n\n", ctx);
-    // Object which maps each planet ID to properties of the planet
-    // The key in this map is the listingId
-    // This is used so we dont have to send out multiple queries to gather data, we can just get all data we need here
-    const planetDataMap: Record<
-      string,
-      {
-        listPrice: number;
-        listingId: string;
-        planet: {
-          id: string;
-          name: string;
-          ownerId?: string;
-          ownerName?: string;
-          ownerEmail?: string;
-        };
-      }
-    > = {};
-    // Sum of all prices in cart
-    let cartTotal = 0;
+  checkoutCart: protectedProcedure
+    .input(z.object({}))
+    .mutation(async ({ input, ctx }) => {
+      console.log("\n\nStarting checkout mutation\n\n", ctx);
+      // Object which maps each planet ID to properties of the planet
+      // The key in this map is the listingId
+      // This is used so we dont have to send out multiple queries to gather data, we can just get all data we need here
+      const planetDataMap: Record<
+        string,
+        {
+          listPrice: number;
+          listingId: string;
+          planet: {
+            id: string;
+            name: string;
+            ownerId?: string;
+            ownerName?: string;
+            ownerEmail?: string;
+          };
+        }
+      > = {};
+      // Sum of all prices in cart
+      let cartTotal = 0;
 
-    // Get all cart items for buyers' cart
-    const buyer = await ctx.db.user.findUniqueOrThrow({
-      where: {
-        id: ctx.session.user.id,
-      },
-      select: {
-        cartItems: {
-          include: {
-            listing: {
-              select: {
-                listPrice: true,
-                id: true,
-                planet: {
-                  select: {
-                    id: true,
-                    name: true,
-                    owner: { select: { id: true, name: true, email: true } },
+      // Get all cart items for buyers' cart
+      const buyer = await ctx.db.user.findUniqueOrThrow({
+        where: {
+          id: ctx.session.user.id,
+        },
+        select: {
+          cartItems: {
+            include: {
+              listing: {
+                select: {
+                  listPrice: true,
+                  id: true,
+                  planet: {
+                    select: {
+                      id: true,
+                      name: true,
+                      owner: { select: { id: true, name: true, email: true } },
+                    },
                   },
                 },
               },
             },
           },
+          balance: true,
+          id: true,
+          name: true,
+          email: true,
         },
-        balance: true,
-        id: true,
-        name: true,
-        email: true,
-      },
-    });
-
-    // Calculate price of all items in buyers cart
-    buyer.cartItems.forEach((item) => {
-      planetDataMap[item.listingId] = {
-        listingId: item.listingId,
-        listPrice: item.listing.listPrice,
-        planet: {
-          id: item.listing.planet.id,
-          name: item.listing.planet.name,
-          ownerEmail: item.listing.planet.owner?.email ?? undefined,
-          ownerId: item.listing.planet.owner?.id,
-          ownerName: item.listing.planet.owner?.name ?? undefined,
-        },
-      };
-      cartTotal += item.listing.listPrice;
-    });
-
-    // If the buyer has insufficient balance to purchase items return
-    if (buyer.balance < cartTotal) {
-      throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        cause: "Insufficient balance",
-        message: "Your balance is too low to purchase these items!",
       });
-    }
 
-    // Create transaction entry
-    const transaction = await ctx.db.transaction.create({
-      data: {
-        buyer: { connect: { id: buyer.id } },
-        transactionTotal: cartTotal,
-      },
-      select: { id: true },
-    });
+      // Calculate price of all items in buyers cart
+      buyer.cartItems.forEach((item) => {
+        planetDataMap[item.listingId] = {
+          listingId: item.listingId,
+          listPrice: item.listing.listPrice,
+          planet: {
+            id: item.listing.planet.id,
+            name: item.listing.planet.name,
+            ownerEmail: item.listing.planet.owner?.email ?? undefined,
+            ownerId: item.listing.planet.owner?.id,
+            ownerName: item.listing.planet.owner?.name ?? undefined,
+          },
+        };
+        cartTotal += item.listing.listPrice;
+      });
 
-    // Store the amount to increment each sellers balance by
-    const userIdToIncrementMap: Record<string, number> = {};
-    for (const planetData of Object.values(planetDataMap)) {
-      if (planetData.planet.ownerId) {
-        userIdToIncrementMap[planetData.planet.ownerId] =
-          (userIdToIncrementMap[planetData.planet.ownerId] ?? 0) +
-          planetData.listPrice;
+      // If the buyer has insufficient balance to purchase items return
+      if (buyer.balance < cartTotal) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          cause: "Insufficient balance",
+          message: "Your balance is too low to purchase these items!",
+        });
       }
-    }
 
-    console.log("Updating user array:", userIdToIncrementMap);
-
-    // Wrap entire procedure in a transaction to ensure atomicity
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [createPlanetTransactions, findRecentPlanetTransactions] =
-      await ctx.db.$transaction([
-        // 1. Create planet transaction objects, these should be connected to the
-        // planets they are assosciated with, and the current transaction
-        ctx.db.planetTransaction.createMany({
-          data: Object.values(planetDataMap).map((data) => {
-            return {
-              snapshotOwnerName:
-                data.planet.ownerName ?? data.planet.ownerEmail ?? "unknown",
-              snapshotListPrice: data.listPrice,
-              snapshotPlanetName: data.planet.name,
-              planetId: data.planet.id,
-              transactionId: transaction.id,
-              buyerId: ctx.session.user.id,
-              startDate: new Date(),
-            };
-          }),
-          skipDuplicates: true,
-        }),
-
-        // 2. Find the most recent planet transactions(besides the one we created) associated with each planet we are purchasing, and return their ids
-        // We will update the "endTime" prop of each of these prior transactions (if they exist).
-        // Note: planetTransaction entries can be thought of as storing a planets "transaction history" because of this,
-        // we store the start and endtime in this planet transaction to store how long a user owned something for, or who owned a planet at X time
-        ctx.db.planetTransaction.findMany({
-          where: {
-            planetId: {
-              in: Object.values(planetDataMap).map(
-                (planetData) => planetData.planet.id,
-              ),
-            },
-            endDate: null ?? undefined,
-          },
-          select: { id: true },
-          orderBy: { startDate: "desc" },
-          // TODO: The take parameter here seems to not be working as intended
-          // TODO: The take parameter was intended to take the first item from each of the returned related planetTransaction sets
-          // TODO: However, it is only returning the most recent transaction from the combined result set of all related planet transactions
-          take: 1,
-        }),
-
-        // 3. Decrement the users balance by the cart total
-        ctx.db.user.update({
-          where: { id: ctx.session.user.id },
-          data: { balance: { decrement: cartTotal } },
-        }),
-
-        // 4. Increment the balance of the sellers for each planet (if the planet had a seller)
-        ...Object.entries(userIdToIncrementMap).map(([userId, amount]) => {
-          console.log("Incrementing user:", userId, "by", amount);
-          return ctx.db.user.update({
-            where: { id: userId },
-            data: { balance: { increment: amount } },
-          });
-        }),
-
-        // 5. Set the owner field of each purchased planet to the user who just bought them
-        ctx.db.planet.updateMany({
-          where: {
-            id: {
-              in: Object.values(planetDataMap).map(
-                (planetData) => planetData.planet.id,
-              ),
-            },
-          },
-          data: { ownerId: ctx.session.user.id },
-        }),
-
-        // 6. Delete planet listings for the planets we purchased
-        ctx.db.listing.deleteMany({
-          where: {
-            id: {
-              in: Object.values(planetDataMap).map((pd) => pd.listingId),
-            },
-          },
-        }),
-      ]);
-
-    // TODO: PROBLEM: This code updates the endDate of planetTransaction records that we just created through the checkout procedure
-    // TODO: This is incorrect behavior, we should only be updating the endDate of records that did not previously exist
-    // TODO: This is likely due to the findRecentPlanetTransactions query returning incorrect records, (review that query)
-    // If we found planetTransactions that need updated
-    if (findRecentPlanetTransactions.length > 0) {
-      // Update the endTime prop of each previously existing planetTransaction to the current time
-      await ctx.db.planetTransaction.updateMany({
-        where: {
-          id: { in: findRecentPlanetTransactions.map((tx) => tx.id) },
-        },
+      // Create transaction entry
+      const transaction = await ctx.db.transaction.create({
         data: {
-          endDate: new Date(),
+          buyer: { connect: { id: buyer.id } },
+          transactionTotal: cartTotal,
         },
+        select: { id: true },
       });
-    }
-    return "Successfully purchased items";
-  }),
+
+      // Store the amount to increment each sellers balance by
+      const userIdToIncrementMap: Record<string, number> = {};
+      for (const planetData of Object.values(planetDataMap)) {
+        if (planetData.planet.ownerId) {
+          userIdToIncrementMap[planetData.planet.ownerId] =
+            (userIdToIncrementMap[planetData.planet.ownerId] ?? 0) +
+            planetData.listPrice;
+        }
+      }
+
+      console.log("Updating user array:", userIdToIncrementMap);
+
+      // Wrap entire procedure in a transaction to ensure atomicity
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [createPlanetTransactions, findRecentPlanetTransactions] =
+        await ctx.db.$transaction([
+          // 1. Create planet transaction objects, these should be connected to the
+          // planets they are assosciated with, and the current transaction
+          ctx.db.planetTransaction.createMany({
+            data: Object.values(planetDataMap).map((data) => {
+              return {
+                snapshotOwnerName:
+                  data.planet.ownerName ?? data.planet.ownerEmail ?? "unknown",
+                snapshotListPrice: data.listPrice,
+                snapshotPlanetName: data.planet.name,
+                planetId: data.planet.id,
+                transactionId: transaction.id,
+                buyerId: ctx.session.user.id,
+                startDate: new Date(),
+              };
+            }),
+            skipDuplicates: true,
+          }),
+
+          // 2. Find the most recent planet transactions(besides the one we created) associated with each planet we are purchasing, and return their ids
+          // We will update the "endTime" prop of each of these prior transactions (if they exist).
+          // Note: planetTransaction entries can be thought of as storing a planets "transaction history" because of this,
+          // we store the start and endtime in this planet transaction to store how long a user owned something for, or who owned a planet at X time
+          ctx.db.planetTransaction.findMany({
+            where: {
+              planetId: {
+                in: Object.values(planetDataMap).map(
+                  (planetData) => planetData.planet.id,
+                ),
+              },
+              endDate: null ?? undefined,
+            },
+            select: { id: true },
+            orderBy: { startDate: "desc" },
+            // TODO: The take parameter here seems to not be working as intended
+            // TODO: The take parameter was intended to take the first item from each of the returned related planetTransaction sets
+            // TODO: However, it is only returning the most recent transaction from the combined result set of all related planet transactions
+            take: 1,
+          }),
+
+          // 3. Decrement the users balance by the cart total
+          ctx.db.user.update({
+            where: { id: ctx.session.user.id },
+            data: { balance: { decrement: cartTotal } },
+          }),
+
+          // 4. Increment the balance of the sellers for each planet (if the planet had a seller)
+          ...Object.entries(userIdToIncrementMap).map(([userId, amount]) => {
+            console.log("Incrementing user:", userId, "by", amount);
+            return ctx.db.user.update({
+              where: { id: userId },
+              data: { balance: { increment: amount } },
+            });
+          }),
+
+          // 5. Set the owner field of each purchased planet to the user who just bought them
+          ctx.db.planet.updateMany({
+            where: {
+              id: {
+                in: Object.values(planetDataMap).map(
+                  (planetData) => planetData.planet.id,
+                ),
+              },
+            },
+            data: { ownerId: ctx.session.user.id },
+          }),
+
+          // 6. Delete planet listings for the planets we purchased
+          ctx.db.listing.deleteMany({
+            where: {
+              id: {
+                in: Object.values(planetDataMap).map((pd) => pd.listingId),
+              },
+            },
+          }),
+        ]);
+
+      // TODO: PROBLEM: This code updates the endDate of planetTransaction records that we just created through the checkout procedure
+      // TODO: This is incorrect behavior, we should only be updating the endDate of records that did not previously exist
+      // TODO: This is likely due to the findRecentPlanetTransactions query returning incorrect records, (review that query)
+      // If we found planetTransactions that need updated
+      if (findRecentPlanetTransactions.length > 0) {
+        // Update the endTime prop of each previously existing planetTransaction to the current time
+        await ctx.db.planetTransaction.updateMany({
+          where: {
+            id: { in: findRecentPlanetTransactions.map((tx) => tx.id) },
+          },
+          data: {
+            endDate: new Date(),
+          },
+        });
+      }
+      return "Successfully purchased items";
+    }),
   getCartItems: protectedProcedure.query(async ({ ctx }) => {
     const itemQuery = await ctx.db.user.findUniqueOrThrow({
       where: { id: ctx.session.user.id },

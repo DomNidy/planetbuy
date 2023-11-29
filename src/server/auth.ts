@@ -38,7 +38,7 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: async ({ session, token, user, newSession, trigger }) => {
+    session: async ({ session, token }) => {
       // Lookup if the user is a guest
       // If the user is a guest, add it to their session
       const userData = await db.user.findUnique({
@@ -87,7 +87,7 @@ export const authOptions: NextAuthOptions = {
       log(code, metadata);
     },
   },
-  pages: {signIn: '/auth/signin'},
+  pages: { signIn: "/auth/signin" },
 
   providers: [
     GitHubProvider({
@@ -126,7 +126,7 @@ export const authOptions: NextAuthOptions = {
         },
       },
       // This callback is only triggered for the credentials provider
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         console.log("\n-- AUTHORIZE CALLBACK --");
         const guestName = await guestNameSchema.parseAsync(
           credentials?.guestName,
