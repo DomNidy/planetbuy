@@ -103,7 +103,7 @@ export default function Checkout() {
                 shoppingCart.cart &&
                 Object.keys(shoppingCart.cart).length > 0
               ) {
-                checkoutCart.mutate({});
+                checkoutCart.mutate();
               }
             }}
           >
