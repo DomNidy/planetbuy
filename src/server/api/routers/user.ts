@@ -12,8 +12,7 @@ export const userRouter = createTRPCRouter({
       select: { balance: true },
     });
   }),
-  checkoutCart: protectedProcedure.mutation(async ({ input, ctx }) => {
-    console.log("\n\nStarting checkout mutation\n\n");
+  checkoutCart: protectedProcedure.mutation(async ({ ctx }) => {
     // Object which maps each planet ID to properties of the planet
     // The key in this map is the listingId
     // This is used so we dont have to send out multiple queries to gather data, we can just get all data we need here
@@ -64,6 +63,22 @@ export const userRouter = createTRPCRouter({
       },
     });
 
+    // Fail if the cart is empty
+    if (buyer.cartItems.length === 0) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        cause: "Cart is empty",
+        message:
+          "Your cart is empty, please add items to it before checking out.",
+      });
+    } else if (buyer.cartItems.length > env.NEXT_PUBLIC_MAX_CART_ITEMS) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        cause: "Too many cart items",
+        message: `Your cart has too many items, please remove some and try again. The maximum amount of items you can have in your cart is ${env.NEXT_PUBLIC_MAX_CART_ITEMS}.`,
+      });
+    }
+
     // Calculate price of all items in buyers cart
     buyer.cartItems.forEach((item) => {
       planetDataMap[item.listingId] = {
@@ -85,7 +100,8 @@ export const userRouter = createTRPCRouter({
       throw new TRPCError({
         code: "PRECONDITION_FAILED",
         cause: "Insufficient balance",
-        message: "Your balance is too low to purchase these items!",
+        message:
+          "Insufficient funds to purchase items in cart. Please add more funds to your account and try again.",
       });
     }
 
@@ -100,8 +116,27 @@ export const userRouter = createTRPCRouter({
 
     // Wrap entire procedure in a transaction to ensure atomicity
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [createPlanetTransactions, findRecentPlanetTransactions] =
+    const [findRecentPlanetTransactions, createPlanetTransaction] =
       await ctx.db.$transaction([
+        // 1. Find the most recent planet transactions(besides the one we created) associated with each planet we are purchasing, and return their ids
+        // We will update the "endTime" prop of each of these prior transactions (if they exist).
+        // Note: planetTransaction entries can be thought of as storing a planets "transaction history" because of this,
+        // we store the start and endtime in this planet transaction to store how long a user owned something for, or who owned a planet at X time
+        ctx.db.planetTransaction.findMany({
+          where: {
+            planetId: {
+              in: Object.values(planetDataMap).map(
+                (planetData) => planetData.planet.id,
+              ),
+            },
+            endDate: null ?? undefined,
+          },
+          // Distinct is used here to ensure we only get the most recent transaction for each planet
+          distinct: ["planetId"],
+          select: { id: true },
+          orderBy: { startDate: "desc" },
+        }),
+
         // 1. Create planet transaction objects, these should be connected to the
         // planets they are assosciated with, and the current transaction
         ctx.db.planetTransaction.createMany({
@@ -118,28 +153,6 @@ export const userRouter = createTRPCRouter({
             };
           }),
           skipDuplicates: true,
-        }),
-
-        // TODO: Review this query,
-        // 2. Find the most recent planet transactions(besides the one we created) associated with each planet we are purchasing, and return their ids
-        // We will update the "endTime" prop of each of these prior transactions (if they exist).
-        // Note: planetTransaction entries can be thought of as storing a planets "transaction history" because of this,
-        // we store the start and endtime in this planet transaction to store how long a user owned something for, or who owned a planet at X time
-        ctx.db.planetTransaction.findMany({
-          where: {
-            planetId: {
-              in: Object.values(planetDataMap).map(
-                (planetData) => planetData.planet.id,
-              ),
-            },
-            endDate: null ?? undefined,
-          },
-          select: { id: true },
-          orderBy: { startDate: "desc" },
-          // TODO: The take parameter here seems to not be working as intended
-          // TODO: The take parameter was intended to take the first item from each of the returned related planetTransaction sets
-          // TODO: However, it is only returning the most recent transaction from the combined result set of all related planet transactions
-          take: 1,
         }),
 
         // 3. Decrement the users balance by the cart total
@@ -170,9 +183,7 @@ export const userRouter = createTRPCRouter({
         }),
       ]);
 
-    // TODO: PROBLEM: This code updates the endDate of planetTransaction records that we just created through the checkout procedure
-    // TODO: This is incorrect behavior, we should only be updating the endDate of records that did not previously exist
-    // TODO: This is likely due to the findRecentPlanetTransactions query returning incorrect records, (review that query)
+    console.log("recent transactions", findRecentPlanetTransactions);
     // If we found planetTransactions that need updated
     if (findRecentPlanetTransactions.length > 0) {
       // Update the endTime prop of each previously existing planetTransaction to the current time
@@ -185,7 +196,21 @@ export const userRouter = createTRPCRouter({
         },
       });
     }
-    return "Successfully purchased items";
+
+    // Increment the balance of the seller of each planet by the amount they sold it for
+    // Certain listings may not have a seller, this is because they were created by the system, in this case we do not increment the balance of the seller
+    for (const planetData of Object.values(planetDataMap)) {
+      if (!planetData.planet.ownerId) continue;
+      await ctx.db.user.update({
+        where: { id: planetData.planet.ownerId },
+        data: { balance: { increment: planetData.listPrice } },
+      });
+    }
+
+    return {
+      message: "Successfully purchased items",
+      transactionId: transaction.id,
+    };
   }),
   getCartItems: protectedProcedure.query(async ({ ctx }) => {
     const itemQuery = await ctx.db.user.findUniqueOrThrow({
@@ -202,8 +227,6 @@ export const userRouter = createTRPCRouter({
 
     return itemQuery.cartItems;
   }),
-
-  // TODO: Begin implementing endpoints to support creating planet listings from items users own
 
   // Return planets owned by the user who requested the endpoint (support pagination with this)
   getUsersPlanets: protectedProcedure
@@ -328,7 +351,6 @@ export const userRouter = createTRPCRouter({
   addItemToCart: protectedProcedure
     .input(z.object({ listingId: z.string() }))
     .mutation(async ({ input: { listingId }, ctx }) => {
-      console.log("User obj", JSON.stringify(ctx.session.user));
       try {
         // Find the user id of the person selling this item
         // This is to ensure a user does not attempt to purchase their own item
