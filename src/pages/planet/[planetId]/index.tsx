@@ -2,15 +2,17 @@ import { useRouter } from "next/router";
 import { env } from "~/env.mjs";
 import { api, getBaseUrl } from "~/utils/api";
 import Image from "next/image";
-import {
-  formatLargeNumberToString,
-} from "~/utils/utils";
+import { formatLargeNumberToString } from "~/utils/utils";
 import Link from "next/link";
 
 export default function PlanetPage() {
   const router = useRouter();
 
   const planetData = api.planet.getPlanetData.useQuery({
+    planetId: router.query.planetId as string,
+  });
+
+  const transactionHistory = api.planet.getPlanetTransactionHistory.useQuery({
     planetId: router.query.planetId as string,
   });
 
@@ -21,6 +23,8 @@ export default function PlanetPage() {
       </div>
     );
   }
+
+  console.log(transactionHistory.data);
 
   return (
     <div className="flex min-h-screen w-full justify-center bg-pbdark-800 px-4  md:px-16 lg:px-44">

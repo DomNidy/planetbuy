@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { TRPCClientError } from "@trpc/client";
 import { Check, ShoppingCart } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -21,13 +22,17 @@ export default function Checkout() {
         ["user", "getCartItems"],
         { type: "query" },
       ]);
+      void queryClient.refetchQueries([
+        ["user", "getBalance"],
+        { type: "query" },
+      ]);
     },
     // TODO: Handle the error for when a user tries to checkout with an empty cart or cart is too large
     onError(err) {
-      if (err.data?.code === "PRECONDITION_FAILED") {
+      if (err instanceof TRPCClientError) {
         toast({
           title: "Failed to checkout",
-          description: "Invalid cart size, please try removing some items.",
+          description: err.message,
           variant: "destructive",
         });
       } else {

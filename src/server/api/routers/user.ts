@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "@prisma/client";
+import { type PlanetTransaction, Prisma } from "@prisma/client";
 import { env } from "~/env.mjs";
 import { createPlanetListingSchema } from "~/utils/schemas";
 
@@ -13,6 +13,15 @@ export const userRouter = createTRPCRouter({
     });
   }),
   checkoutCart: protectedProcedure.mutation(async ({ ctx }) => {
+    // Reject requests from guests
+    if (ctx.session.user.isGuest && !env.NEXT_PUBLIC_ALLOW_GUEST_CHECKOUT) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        cause: "User is a guest",
+        message: "You must be logged in to perform this action.",
+      });
+    }
+
     // Object which maps each planet ID to properties of the planet
     // The key in this map is the listingId
     // This is used so we dont have to send out multiple queries to gather data, we can just get all data we need here
@@ -142,7 +151,9 @@ export const userRouter = createTRPCRouter({
         ctx.db.planetTransaction.createMany({
           data: Object.values(planetDataMap).map((data) => {
             return {
-              snapshotOwnerName:
+              snapshotBuyerName: buyer.name,
+              sellerId: data.planet.ownerId ?? undefined,
+              snapshotSellerName:
                 data.planet.ownerName ?? data.planet.ownerEmail ?? "unknown",
               snapshotListPrice: data.listPrice,
               snapshotPlanetName: data.planet.name,
@@ -150,7 +161,7 @@ export const userRouter = createTRPCRouter({
               transactionId: transaction.id,
               buyerId: ctx.session.user.id,
               startDate: new Date(),
-            };
+            } as PlanetTransaction;
           }),
           skipDuplicates: true,
         }),
@@ -183,7 +194,6 @@ export const userRouter = createTRPCRouter({
         }),
       ]);
 
-    console.log("recent transactions", findRecentPlanetTransactions);
     // If we found planetTransactions that need updated
     if (findRecentPlanetTransactions.length > 0) {
       // Update the endTime prop of each previously existing planetTransaction to the current time
@@ -301,7 +311,7 @@ export const userRouter = createTRPCRouter({
           purchasedItems: {
             select: {
               snapshotPlanetName: true,
-              snapshotOwnerName: true,
+              snapshotSellerName: true,
               snapshotListPrice: true,
             },
           },
@@ -351,6 +361,15 @@ export const userRouter = createTRPCRouter({
   addItemToCart: protectedProcedure
     .input(z.object({ listingId: z.string() }))
     .mutation(async ({ input: { listingId }, ctx }) => {
+      // Reject requests from guests
+      if (ctx.session.user.isGuest && !env.NEXT_PUBLIC_ALLOW_GUEST_CHECKOUT) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          cause: "User is a guest",
+          message: "You cannot purchase items as a guest.",
+        });
+      }
+
       try {
         // Find the user id of the person selling this item
         // This is to ensure a user does not attempt to purchase their own item
@@ -400,6 +419,7 @@ export const userRouter = createTRPCRouter({
             "An unknown error occured while trying to add this item to your cart, please try again.",
         });
       }
+      return { message: "Successfully added item to cart." };
     }),
   // itemId: Is the listing id of the item to remove from the users' cart
   removeItemFromCart: protectedProcedure

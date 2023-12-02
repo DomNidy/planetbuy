@@ -24,6 +24,9 @@ let caller: ReturnType<typeof appRouter.createCaller> | null = null;
 beforeAll(async () => {
   // Ensure we are running in the test environment
   expect(env.NODE_ENV).toBe("test");
+  if (env.NODE_ENV !== "test") {
+    throw new Error("Tests must be run in the test environment!");
+  }
 
   // Delete all relevant data from the database before running the tests
   // This is to prevent the test from failing if it was not cleaned up properly

@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { TRPCClientError } from "@trpc/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { type SetStateAction, createContext } from "react";
@@ -135,6 +136,7 @@ export default function ShoppingCartProvider({
       router.push(`${getBaseUrl()}/api/auth/signin`);
     }
 
+    // Check if we have a valid listing id
     if (!planetData?.planet?.listing?.id) {
       toast({
         title: "Failed to add item to cart, please try again.",
@@ -153,11 +155,18 @@ export default function ShoppingCartProvider({
       return;
     }
 
-    console.log(`Adding item with id ${planetData.planet.listing.id} to cart.`);
+    // Send request to add item to cart
     addItemMutation
       .mutateAsync({ listingId: planetData.planet.listing.id })
       .then(() => setIsOptimisticCallback(false))
       .catch((err) => {
+        if (err instanceof TRPCClientError) {
+          toast({
+            title: "Failed to add item to cart",
+            description: `${err.message}`,
+            variant: "destructive",
+          });
+        }
         setIsOptimisticCallback(false);
         console.error(
           "Error occured in addItemMutation request",

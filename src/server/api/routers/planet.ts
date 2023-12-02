@@ -251,6 +251,20 @@ export const planetRouter = createTRPCRouter({
 
       return listing;
     }),
+  getPlanetTransactionHistory: publicProcedure
+    .input(
+      z.object({
+        planetId: z.string(),
+      }),
+    )
+    .query(async ({ input: { planetId }, ctx }) => {
+      const planetTransactions = await ctx.db.planetTransaction.findMany({
+        where: { planetId: planetId },
+        orderBy: { startDate: "desc" },
+      });
+
+      return planetTransactions;
+    }),
   generateRandomPlanets: publicProcedure
     .input(
       z.object({

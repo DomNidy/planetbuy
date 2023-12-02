@@ -76,8 +76,8 @@ model PlanetTransaction {
     buyerId String
 
     // The user sold this item
-    owner   User?   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
-    ownerId String?
+    seller   User?   @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+    sellerId String?
 
     // The time frame which this planet belonged to the owner for
     startDate DateTime  @default(now())
@@ -89,14 +89,14 @@ model PlanetTransaction {
     // A "snapshot" of the planets' properties at the time of record creation
     // These are not directly relational and should be set manually
     snapshotPlanetName String
-    snapshotOwnerName  String
+    snapshotSellerName String @default("unknown")
     // Snapshot of this planets listing price (when it was sold)
     snapshotListPrice  Float
     snapshotBuyerName  String @default("unknown")
 
     @@index([planetId])
     @@index([transactionId, buyerId])
-    @@index([ownerId])
+    @@index([sellerId])
 }
 
 // A transaction represents a user purchasing items from their cart

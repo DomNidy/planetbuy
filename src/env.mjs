@@ -49,7 +49,8 @@ export const env = createEnv({
     NEXT_PUBLIC_MAX_LISTING_PRICE: z.number(),
     NEXT_PUBLIC_MIN_SURFACE_AREA: z.number(),
     NEXT_PUBLIC_MAX_SURFACE_AREA: z.number(),
-    NEXT_PUBLIC_MAX_CART_ITEMS: z.number().default(10)
+    NEXT_PUBLIC_MAX_CART_ITEMS: z.number().default(10),
+    NEXT_PUBLIC_ALLOW_GUEST_CHECKOUT: z.boolean().default(false)
   },
 
   /**
@@ -73,6 +74,8 @@ export const env = createEnv({
 
 
     //* Store configuration
+    // Whether or not guest users can checkout
+    NEXT_PUBLIC_ALLOW_GUEST_CHECKOUT: process.env.NEXT_PUBLIC_ALLOW_GUEST_CHECKOUT ? process.env.NEXT_PUBLIC_ALLOW_GUEST_CHECKOUT === 'true' : false,
     // The maximum number of items a user can have in their cart
     NEXT_PUBLIC_MAX_CART_ITEMS: process.env.NEXT_PUBLIC_MAX_CART_ITEMS ? parseInt(process.env.NEXT_PUBLIC_MAX_CART_ITEMS.replace(/_/g, '')) : 10,
     // Minimum price an item can be listed for
