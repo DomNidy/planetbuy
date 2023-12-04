@@ -446,27 +446,40 @@ export const userRouter = createTRPCRouter({
   getUserProfile: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.user.findUniqueOrThrow({
-        where: { id: input.userId },
-        select: {
-          name: true,
-          planets: {
-            orderBy: { quality: "desc" },
-            select: {
-              discoveryDate: true,
-              id: true,
-              name: true,
-              owner: { select: { id: true } },
-              surfaceArea: true,
-              quality: true,
-              temperature: true,
-              terrain: true,
-              listing: { select: { listDate: true, id: true } },
-              planetImage: { select: { bucketPath: true } },
+      try {
+        return await ctx.db.user.findUniqueOrThrow({
+          where: { id: input.userId },
+          select: {
+            name: true,
+            planets: {
+              orderBy: { quality: "desc" },
+              select: {
+                discoveryDate: true,
+                id: true,
+                name: true,
+                owner: { select: { id: true } },
+                surfaceArea: true,
+                quality: true,
+                temperature: true,
+                terrain: true,
+                listing: {
+                  select: { listDate: true, id: true, listPrice: true },
+                },
+                planetImage: { select: { bucketPath: true } },
+              },
             },
+            image: true,
           },
-          image: true,
-        },
-      });
+        });
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025") {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "This user does not exist.",
+            });
+          }
+        }
+      }
     }),
 });

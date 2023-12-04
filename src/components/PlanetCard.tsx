@@ -116,11 +116,17 @@ export default function PlanetCard({
                 />
               </>
             )}
-            {isUserOwner && variant === "listing" && (
-              <p className="absolute right-1 top-1 cursor-default rounded-lg bg-pbdark-850 p-3 text-center  font-semibold text-pbtext-500">
-                You own this
-              </p>
-            )}
+            {isUserOwner &&
+              variant === "listing" &&
+              planetData.planet.listing?.id && (
+                <Link
+                  className="hover:bg-pbtext-500 absolute right-1 top-1 cursor-pointer rounded-lg bg-pbdark-850 p-3 text-center  font-semibold text-pbtext-500 transition-all hover:text-pbdark-850"
+                  href={`${getBaseUrl()}/listing/${planetData.planet?.listing
+                    ?.id}`}
+                >
+                  Edit listing
+                </Link>
+              )}
           </>
         )}
       </div>

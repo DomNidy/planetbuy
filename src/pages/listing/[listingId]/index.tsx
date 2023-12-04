@@ -9,9 +9,12 @@ import {
   formatNumberToStringWithCommas,
 } from "~/utils/utils";
 import { env } from "~/env.mjs";
+import { useSession } from "next-auth/react";
+
 
 export default function ListingPage() {
   const router = useRouter();
+  const session = useSession();
   const shoppingCart = useContext(ShoppingCartContext);
 
   const listingData = api.planet.getPlanetDataFromListingId.useQuery({
@@ -222,62 +225,84 @@ export default function ListingPage() {
                 <sup>2</sup> km
               </h2>
             </div>
-
-            <div className="flex w-[17rem] flex-row justify-start gap-2  px-1 md:w-80"></div>
-            {listingData.data.id &&
-            shoppingCart.isItemInCart(listingData.data.id) ? (
-              <div
-                onClick={() => {
-                  if (listingData.data?.id && !isOptimistic) {
-                    setIsOptimistic(true);
-                    shoppingCart.removeItemFromCart(
-                      listingData.data.id,
-                      setIsOptimistic,
-                    );
-                  }
-                }}
-                className={`${
-                  isOptimistic
-                    ? "pointer-events-none opacity-80"
-                    : "pointer-events-auto opacity-100"
-                }  group flex w-fit cursor-pointer items-center mt-2 rounded-md bg-red-400 p-2 transition-all hover:bg-red-500 `}
-              >
-                <p className="font-medium  text-white">Remove from cart</p>
-                <X
-                  className="relative cursor-pointer rounded-full p-1 transition-transform duration-75 group-hover:scale-110 "
-                  width={32}
-                  height={32}
-                  color="white"
-                />
-              </div>
+            {listingData.data.planet.owner?.id !== session.data?.user.id ? (
+              // If the user is not the owner of this listing, show the add to / remove from cart button
+              <>
+                <div className="flex w-[17rem] flex-row justify-start gap-2  px-1 md:w-80"></div>
+                {listingData.data.id &&
+                shoppingCart.isItemInCart(listingData.data.id) ? (
+                  <div
+                    onClick={() => {
+                      if (listingData.data?.id && !isOptimistic) {
+                        setIsOptimistic(true);
+                        shoppingCart.removeItemFromCart(
+                          listingData.data.id,
+                          setIsOptimistic,
+                        );
+                      }
+                    }}
+                    className={`${
+                      isOptimistic
+                        ? "pointer-events-none opacity-80"
+                        : "pointer-events-auto opacity-100"
+                    }  group mt-2 flex w-fit cursor-pointer items-center rounded-md bg-red-400 p-2 transition-all hover:bg-red-500 `}
+                  >
+                    <p className="font-medium  text-white">Remove from cart</p>
+                    <X
+                      className="relative cursor-pointer rounded-full p-1 transition-transform duration-75 group-hover:scale-110 "
+                      width={32}
+                      height={32}
+                      color="white"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => {
+                      if (listingData.data?.id && !isOptimistic) {
+                        setIsOptimistic(true);
+                        shoppingCart.addItemToCart(
+                          {
+                            planet: listingData.data.planet,
+                            listPrice: listingData.data.listPrice,
+                            id: listingData.data.id,
+                          },
+                          setIsOptimistic,
+                        );
+                      }
+                    }}
+                    className={`${
+                      isOptimistic
+                        ? "pointer-events-none opacity-80"
+                        : "pointer-events-auto opacity-100"
+                    }  group mt-2 flex w-fit cursor-pointer items-center rounded-md bg-neutral-100 p-2 transition-all hover:bg-neutral-300`}
+                  >
+                    <p className="font-medium  text-pbdark-800">Add to cart</p>
+                    <ShoppingBasket
+                      className="relative ml-1 cursor-pointer rounded-full p-1 text-pbdark-800 transition-transform duration-75 group-hover:scale-110 "
+                      width={32}
+                      height={32}
+                    />
+                  </div>
+                )}
+              </>
             ) : (
-              <div
-                onClick={() => {
-                  if (listingData.data?.id && !isOptimistic) {
-                    setIsOptimistic(true);
-                    shoppingCart.addItemToCart(
-                      {
-                        planet: listingData.data.planet,
-                        listPrice: listingData.data.listPrice,
-                        id: listingData.data.id,
-                      },
-                      setIsOptimistic,
-                    );
-                  }
-                }}
-                className={`${
-                  isOptimistic
-                    ? "pointer-events-none opacity-80"
-                    : "pointer-events-auto opacity-100"
-                }  group mt-2 flex w-fit cursor-pointer items-center rounded-md bg-neutral-100 p-2 transition-all hover:bg-neutral-300`}
-              >
-                <p className="font-medium  text-pbdark-800">Add to cart</p>
-                <ShoppingBasket
-                  className="relative ml-1 cursor-pointer rounded-full p-1 text-pbdark-800 transition-transform duration-75 group-hover:scale-110 "
-                  width={32}
-                  height={32}
-                />
-              </div>
+              // If the user does own this listing, show the edit button
+              // TODO: Create an edit listing form and display it in a dialog
+              // TODO: This edit listing component should allow the user to send an edit listing request and
+              // TODO: display a loading spinner while the request is processing
+              <>
+                {/**  
+                 <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="relative rounded-lg border-2 bg-pbtext-500 text-pbdark-850 hover:bg-pbtext-500 hover:bg-opacity-95 ">
+                      <p className="text-base">Edit Listing</p>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                  </DialogContent>
+                </Dialog>
+                */}
+              </>
             )}
           </div>
         </div>
