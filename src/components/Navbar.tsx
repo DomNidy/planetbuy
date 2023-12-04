@@ -16,7 +16,6 @@ import {
 } from "./ui/dropdown-menu";
 import {
   ClipboardList,
-  Container,
   Gavel,
   History,
   LogOut,
@@ -99,10 +98,10 @@ function AuthDisplay() {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem className="cursor-pointer p-0">
                 <Link
                   href={`${getBaseUrl()}/profile/${sessionData.user.id}`}
-                  className="flex w-full items-center"
+                  className="flex w-full items-center rounded-lg p-2"
                 >
                   <PersonIcon className="mr-2 h-4 w-4"></PersonIcon>
                   <span>Profile</span>
@@ -112,30 +111,30 @@ function AuthDisplay() {
             <DropdownMenuLabel>Marketplace</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem className="cursor-pointer p-0">
                 <Link
-                  className="flex w-full items-center  "
+                  className="flex w-full items-center  rounded-lg p-2"
                   href={`${getBaseUrl()}/create-listing`}
                 >
                   <Gavel className="mr-2 h-4 w-4" />
                   <span>Create a Listing</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem className="cursor-pointer p-0">
                 <Link
                   href={`${getBaseUrl()}/profile/${
                     sessionData.user.id
                   }/listings`}
-                  className="flex w-full items-center"
+                  className="flex w-full items-center rounded-lg p-2"
                 >
                   <ClipboardList className="mr-2 h-4 w-4" />
                   <span>Your Listings</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
+              <DropdownMenuItem className="cursor-pointer p-0">
                 <Link
                   href={`${getBaseUrl()}/transactions/`}
-                  className="flex w-full items-center"
+                  className="flex w-full items-center rounded-lg p-2"
                 >
                   <History className="mr-2 h-4 w-4" />
                   <span>Transaction History</span>
@@ -143,9 +142,9 @@ function AuthDisplay() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer p-0">
               <div
-                className="flex items-center "
+                className="flex items-center rounded-lg p-2"
                 onClick={() => void signOut()}
               >
                 <LogOut className="mr-2 h-4 w-4" />

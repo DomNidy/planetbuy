@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
+import CircleLoader from "react-spinners/CircleLoader";
 import PlanetCard from "~/components/PlanetCard";
 import { api } from "~/utils/api";
 
@@ -10,7 +11,17 @@ export default function ListingsPage() {
     userId: router.query.uid as string,
   });
 
-  if (!userProfile.data) {
+  if (userProfile.isLoading)
+    return (
+      <div className="flex min-h-screen w-full bg-pbdark-800 items-center justify-center">
+        {" "}
+        <div className="flex flex-row items-center">
+          <CircleLoader color="white" />
+        </div>
+      </div>
+    );
+
+  if (!userProfile.data && !userProfile.isLoading) {
     return <div className="flex min-h-screen w-full bg-pbdark-800"></div>;
   }
 

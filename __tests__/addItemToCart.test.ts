@@ -42,7 +42,6 @@ describe.only("Add items to cart", () => {
         },
       }),
     );
-
     const listings = await createTestListings(
       await createTestPlanets(1),
       10000,
