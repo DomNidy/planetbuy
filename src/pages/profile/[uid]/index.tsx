@@ -7,7 +7,7 @@ import { api } from "~/utils/api";
 export default function ListingsPage() {
   const router = useRouter();
 
-  const userProfile = api.user.getUserProfile.useQuery(
+  const userProfile = api.user.getUserProfileWithPlanets.useQuery(
     {
       userId: router.query.uid as string,
     },

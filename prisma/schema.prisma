@@ -138,9 +138,13 @@ model Listing {
     listDate  DateTime @default(now())
 
     // A listing must always be connected to a planet
-    planet   Planet     @relation(fields: [planetId], references: [id], onDelete: Cascade)
-    planetId String     @unique
+    planet   Planet @relation(fields: [planetId], references: [id], onDelete: Cascade)
+    planetId String @unique
+
+    ownerId  String?
     CartItem CartItem[]
+
+    @@index([planetId])
 }
 
 model CartItem {

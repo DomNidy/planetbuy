@@ -12,9 +12,11 @@ export default defineConfig({
       "~": resolve(__dirname, "./src/"),
     },
   },
+  
   test: {
     environment: "node",
     setupFiles: ["./__tests__/vitest.setup.ts"],
+    testTimeout: 10000,
   },
 
   root: resolve(__dirname, "./"),

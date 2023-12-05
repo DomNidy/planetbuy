@@ -26,10 +26,12 @@ import { Input } from "~/components/ui/input";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { CircleLoader } from "react-spinners";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function CreateListingPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const planetData = api.planet.getPlanetData.useQuery({
     planetId: router.query.planetId as string,
@@ -45,6 +47,14 @@ export default function CreateListingPage() {
         variant: "destructive",
       });
     },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries([["user", "getUsersListings"]]);
+
+      await queryClient.invalidateQueries([["user", "getUsersPlanets"]]);
+
+      await queryClient.invalidateQueries([["planet", "getPlanetListings"]]);
+      console.log("Invalidating");
+    },
   });
 
   const form = useForm<z.infer<typeof createPlanetListingSchema>>({
@@ -57,7 +67,6 @@ export default function CreateListingPage() {
 
   // Create listing handler
   function onSubmit(listingProps: z.infer<typeof createPlanetListingSchema>) {
-    console.log(listingProps);
     createListing.mutate(listingProps);
   }
 
@@ -74,7 +83,7 @@ export default function CreateListingPage() {
   return (
     <div className="flex min-h-screen w-full justify-center bg-pbdark-800 px-4  md:px-16 lg:px-44">
       {createListing.status === "success" && (
-        <div className="flex flex-col  items-center justify-center gap-2 text-2xl font-medium text-pbtext-500 sm:text-3xl">
+        <div className="flex flex-col mb-16 items-center justify-center gap-2 text-2xl font-medium text-pbtext-500 sm:text-3xl">
           <div className="flex flex-row gap-2">
             <Check
               className="aspect-square h-7 w-7 rounded-full bg-green-500 sm:h-8 sm:w-8"
@@ -83,12 +92,20 @@ export default function CreateListingPage() {
             <p>Listing created</p>{" "}
           </div>
 
-          <Link
-            href={`${getBaseUrl()}/listing/${createListing.data.id}`}
-            className="text-base text-muted underline"
-          >
-            Take me there
-          </Link>
+          <div className="flex flex-row gap-4">
+            <Link
+              href={`${getBaseUrl()}/listing/${createListing.data.id}`}
+              className="text-base text-muted underline"
+            >
+              Take me there
+            </Link>
+            <Link
+              href={`${getBaseUrl()}/create-listing`}
+              className="text-base text-muted underline"
+            >
+              Create another
+            </Link>
+          </div>
         </div>
       )}
 

@@ -27,7 +27,6 @@ export default function Checkout() {
         { type: "query" },
       ]);
     },
-    // TODO: Handle the error for when a user tries to checkout with an empty cart or cart is too large
     onError(err) {
       if (err instanceof TRPCClientError) {
         toast({

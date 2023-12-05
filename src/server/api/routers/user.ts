@@ -244,39 +244,55 @@ export const userRouter = createTRPCRouter({
       z.object({
         cursor: z.object({ planetId: z.string() }).nullish(),
         limit: z.number().min(1, "Cannot return less than 1 result").optional(),
-        returnPlanetsWithListings: z.boolean().optional().default(true),
       }),
     )
-    .query(
-      async ({
-        input: { cursor, limit = 10, returnPlanetsWithListings },
-        ctx,
-      }) => {
-        const items = await ctx.db.planet.findMany({
-          where: {
-            ownerId: ctx.session.user.id,
-            ...(!returnPlanetsWithListings
-              ? {
-                  listing: null,
-                }
-              : {}),
-          },
-          cursor: cursor ? { id: cursor.planetId } : undefined,
-          take: limit,
-          include: { planetImage: true, listing: true, owner: true },
-        });
+    .query(async ({ input: { cursor, limit = 10 }, ctx }) => {
+      const items = await ctx.db.planet.findMany({
+        where: {
+          ownerId: ctx.session.user.id,
+        },
+        cursor: cursor ? { id: cursor.planetId } : undefined,
+        take: limit,
+        include: { planetImage: true, listing: true, owner: true },
+      });
 
-        let nextCursor: typeof cursor | undefined = undefined;
-        if (items.length === limit) {
-          const nextItem = items.pop();
-          nextCursor = { planetId: nextItem!.id };
-        }
-        return { items, nextCursor };
-      },
-    ),
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (items.length === limit) {
+        const nextItem = items.pop();
+        nextCursor = { planetId: nextItem!.id };
+      }
+      return { items, nextCursor };
+    }),
 
   // Return a users listings (specified by the user id) the endpoint (support pagination with this)
-  // * getUsersListings: publicProcedure.query(async ({ctx, input}) => {})
+  getUsersListings: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        cursor: z.object({ listingId: z.string() }).nullish(),
+        limit: z.number().min(1, "Cannot return less than 1 result").optional(),
+      }),
+    )
+    .query(async ({ input: { userId, cursor, limit = 10 }, ctx }) => {
+      const listings = await ctx.db.listing.findMany({
+        where: {
+          planet: {
+            ownerId: userId,
+          },
+        },
+        cursor: cursor ? { id: cursor.listingId } : undefined,
+        take: limit,
+        include: { planet: { include: { planetImage: true } } },
+      });
+
+      return {
+        listings,
+        nextCursor:
+          listings.length === limit
+            ? { listingId: listings.pop()!.id }
+            : undefined,
+      };
+    }),
 
   // Return transaction history of the user who requested the endpoint (support pagination with this)
   getTransactionHistory: protectedProcedure
@@ -444,6 +460,25 @@ export const userRouter = createTRPCRouter({
       }
     }),
   getUserProfile: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        return await ctx.db.user.findUniqueOrThrow({
+          where: { id: input.userId },
+          select: { name: true, image: true },
+        });
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025") {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "This user does not exist.",
+            });
+          }
+        }
+      }
+    }),
+  getUserProfileWithPlanets: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ ctx, input }) => {
       try {

@@ -3,10 +3,8 @@ import PlanetCard from "~/components/PlanetCard";
 import Hero from "~/components/Hero";
 import SearchBar from "~/components/SearchBar";
 import { useEffect, useRef, useState } from "react";
-import { isScrolledToBottom } from "~/utils/utils";
 import PlanetCardSkeleton from "~/components/PlanetCardSkeleton";
 import { type RouterInputs } from "~/utils/api";
-import { now } from "next-auth/client/_utils";
 import { useDebounce } from "@uidotdev/usehooks";
 import SearchFilterProvider from "~/context/SearchFilterContext";
 
