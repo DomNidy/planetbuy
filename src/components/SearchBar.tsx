@@ -9,7 +9,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { type Dispatch, type SetStateAction, useContext } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useContext,
+  useState,
+} from "react";
 import { PriceRangeSlider } from "./PriceRangeSlider";
 import { SurfaceAreaRangeSlider } from "./SurfaceAreaRangeSlider";
 import { env } from "~/env.mjs";
@@ -653,7 +658,7 @@ export default function SearchBar({
             });
           }}
         >
-          <SelectTrigger className="ml-2 rounded-full border-2 border-white bg-pbdark-850 bg-primary text-primary-foreground transition-none hover:bg-primary/80">
+          <SelectTrigger className=" ml-2 rounded-full border-2 border-white bg-pbdark-850 bg-primary text-primary-foreground transition-none hover:bg-primary/80">
             <span className="flex items-center justify-center">
               <p className="hidden text-white sm:block">Sort</p>
             </span>

@@ -14,11 +14,15 @@ export function Toaster() {
   const { toasts } = useToast();
 
   return (
-    <ToastProvider>
+    <ToastProvider duration={3000}>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          <Toast key={id} {...props} className="fixed top-16 sm:top-32  self-center w-fit" duration={4500}>
+          <Toast
+            key={id}
+            {...props}
+            className="fixed top-16 w-fit  self-center sm:top-32"
+          >
             <div className="grid gap-1">
               {title && <ToastTitle>{title}</ToastTitle>}
               {description && (

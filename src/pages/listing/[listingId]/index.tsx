@@ -10,12 +10,16 @@ import {
 } from "~/utils/utils";
 import { env } from "~/env.mjs";
 import { useSession } from "next-auth/react";
-
+import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import EditListingForm from "~/components/EditListingForm";
 
 export default function ListingPage() {
   const router = useRouter();
   const session = useSession();
   const shoppingCart = useContext(ShoppingCartContext);
+
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   const listingData = api.planet.getPlanetDataFromListingId.useQuery({
     listingId: router.query.listingId as string,
@@ -291,17 +295,25 @@ export default function ListingPage() {
               // TODO: This edit listing component should allow the user to send an edit listing request and
               // TODO: display a loading spinner while the request is processing
               <>
-                {/**  
-                 <Dialog>
+                <Dialog open={dialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="relative rounded-lg border-2 bg-pbtext-500 text-pbdark-850 hover:bg-pbtext-500 hover:bg-opacity-95 ">
+                    <Button
+                      onClick={() => setDialogOpen(!dialogOpen)}
+                      className="relative rounded-lg border-2 bg-pbtext-500 text-pbdark-850 hover:bg-pbtext-500 hover:bg-opacity-95 "
+                    >
                       <p className="text-base">Edit Listing</p>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent
+                    onInteractOutside={() => setDialogOpen(false)}
+                    className="max-w-[92%] rounded-lg  sm:max-w-[300px]"
+                  >
+                    <EditListingForm
+                      listingData={listingData.data}
+                      setDialogOpen={setDialogOpen}
+                    />
                   </DialogContent>
                 </Dialog>
-                */}
               </>
             )}
           </div>

@@ -4,6 +4,7 @@ import { Check, ShoppingCart } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useContext, useEffect } from "react";
+import { CircleLoader } from "react-spinners";
 import { Button } from "~/components/ui/button";
 import { useToast } from "~/components/ui/use-toast";
 import { ShoppingCartContext } from "~/context/ShoppingCartContext";
@@ -44,12 +45,34 @@ export default function Checkout() {
     },
   });
 
+  // TODO: If the user refreshes on this page, they will be redirected even if they are signed in
+  // TODO: This is because the session is not yet loaded, fix this
   // Redirect user to signin page if they are not signed in
   useEffect(() => {
     if (session.status !== "authenticated") {
       void router.replace(`${getBaseUrl()}/auth/signin`);
     }
   });
+
+  if (checkoutCart.status === "loading") {
+    return (
+      <main className="flex min-h-screen  flex-col items-center gap-4 bg-pbdark-800 pt-32 ">
+        <div className="flex items-center justify-center">
+          <CircleLoader color="white" />
+        </div>
+      </main>
+    );
+  }
+
+  if (checkoutCart.status === "success") {
+    <div className="flex flex-row items-center justify-center gap-2 text-2xl font-medium text-pbtext-500 sm:text-3xl">
+      <Check
+        className="aspect-square h-7 w-7 rounded-full bg-green-500 sm:h-8 sm:w-8"
+        color="white"
+      />
+      <p>Thanks for your purchase!</p>
+    </div>;
+  }
 
   return (
     <main className="flex min-h-screen  flex-col items-center gap-4 bg-pbdark-800 pt-32 ">
@@ -123,20 +146,6 @@ export default function Checkout() {
 
       {!shoppingCart?.cart && checkoutCart.status !== "success" && (
         <p className="text-center text-pbtext-500">Your cart is empty.</p>
-      )}
-
-      {checkoutCart.status === "loading" && (
-        <p className="text-center text-pbtext-500">Processing...</p>
-      )}
-
-      {checkoutCart.status === "success" && (
-        <div className="flex flex-row items-center justify-center gap-2 text-2xl font-medium text-pbtext-500 sm:text-3xl">
-          <Check
-            className="aspect-square h-7 w-7 rounded-full bg-green-500 sm:h-8 sm:w-8"
-            color="white"
-          />
-          <p>Thanks for your purchase!</p>
-        </div>
       )}
     </main>
   );

@@ -53,7 +53,6 @@ export default function CreateListingPage() {
       await queryClient.invalidateQueries([["user", "getUsersPlanets"]]);
 
       await queryClient.invalidateQueries([["planet", "getPlanetListings"]]);
-      console.log("Invalidating");
     },
   });
 
@@ -83,7 +82,7 @@ export default function CreateListingPage() {
   return (
     <div className="flex min-h-screen w-full justify-center bg-pbdark-800 px-4  md:px-16 lg:px-44">
       {createListing.status === "success" && (
-        <div className="flex flex-col mb-16 items-center justify-center gap-2 text-2xl font-medium text-pbtext-500 sm:text-3xl">
+        <div className="mb-16 flex flex-col items-center justify-center gap-2 text-2xl font-medium text-pbtext-500 sm:text-3xl">
           <div className="flex flex-row gap-2">
             <Check
               className="aspect-square h-7 w-7 rounded-full bg-green-500 sm:h-8 sm:w-8"

@@ -24,3 +24,17 @@ export const createPlanetListingSchema = z.object({
     .min(env.NEXT_PUBLIC_MIN_LISTING_PRICE)
     .max(env.NEXT_PUBLIC_MAX_LISTING_PRICE),
 });
+
+export const updatePlanetListingSchema = z.object({
+  listingId: z.string(),
+  listPrice: z.coerce
+    .number()
+    .min(
+      env.NEXT_PUBLIC_MIN_LISTING_PRICE,
+      `Cannot list for less than $${env.NEXT_PUBLIC_MIN_LISTING_PRICE}`,
+    )
+    .max(
+      env.NEXT_PUBLIC_MAX_LISTING_PRICE,
+      `Cannot list for more than $${env.NEXT_PUBLIC_MAX_LISTING_PRICE}`,
+    ),
+});

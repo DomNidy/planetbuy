@@ -3,7 +3,10 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { type PlanetTransaction, Prisma } from "@prisma/client";
 import { env } from "~/env.mjs";
-import { createPlanetListingSchema } from "~/utils/schemas";
+import {
+  createPlanetListingSchema,
+  updatePlanetListingSchema,
+} from "~/utils/schemas";
 
 export const userRouter = createTRPCRouter({
   getBalance: protectedProcedure.query(({ ctx }) => {
@@ -369,7 +372,44 @@ export const userRouter = createTRPCRouter({
     }),
 
   // Update a planet listing for a user (this user must own the planet the listing is associated with, and the user ids must match)
-  // * updatePlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})
+  updatePlanetListing: protectedProcedure
+    .input(updatePlanetListingSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Lookup the listing via listingId and sure the owner is the same as the user who requested the endpoint
+        const listing = await ctx.db.listing.findUnique({
+          where: {
+            id: input.listingId,
+            AND: { planet: { ownerId: ctx.session.user.id } },
+          },
+        });
+
+        // If the listing id does not exist, or the user does not own the planet, throw an error
+        if (!listing) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            cause: "User does not own a planet with the requested planet id",
+            message: "This planet does not belong to you, or does not exist.",
+          });
+        }
+
+        // Update the listing for the planet
+        await ctx.db.listing.update({
+          where: { id: input.listingId },
+          data: { listPrice: input.listPrice },
+          select: { id: true },
+        });
+      } catch (err) {
+        console.log(err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "An unknown error occured while trying to update this listing, please try again.",
+        });
+      }
+
+      return "Successfully updated listing";
+    }),
 
   // Delete a planet listing for a user (this user must own the planet the listing is asssociated with, and the user ids must match)
   // * deletePlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})
