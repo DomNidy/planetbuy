@@ -295,7 +295,7 @@ export default function ListingPage() {
               // TODO: This edit listing component should allow the user to send an edit listing request and
               // TODO: display a loading spinner while the request is processing
               <>
-                <Dialog open={dialogOpen}>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button
                       onClick={() => setDialogOpen(!dialogOpen)}

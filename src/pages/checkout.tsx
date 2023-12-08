@@ -56,7 +56,7 @@ export default function Checkout() {
 
   if (checkoutCart.status === "loading") {
     return (
-      <main className="flex min-h-screen  flex-col items-center gap-4 bg-pbdark-800 pt-32 ">
+      <main className="flex min-h-screen  flex-col items-center gap-4 bg-pbdark-800 pt-[22rem]">
         <div className="flex items-center justify-center">
           <CircleLoader color="white" />
         </div>
@@ -65,13 +65,19 @@ export default function Checkout() {
   }
 
   if (checkoutCart.status === "success") {
-    <div className="flex flex-row items-center justify-center gap-2 text-2xl font-medium text-pbtext-500 sm:text-3xl">
-      <Check
-        className="aspect-square h-7 w-7 rounded-full bg-green-500 sm:h-8 sm:w-8"
-        color="white"
-      />
-      <p>Thanks for your purchase!</p>
-    </div>;
+    return (
+      <main className="flex min-h-screen  flex-col items-center gap-4 bg-pbdark-800 pt-[22rem] ">
+        <div className="flex gap-2 ">
+          <Check
+            className="aspect-square h-7 w-7 rounded-full bg-green-500 sm:h-8 sm:w-8"
+            color="white"
+          />
+          <p className="text-2xl font-medium text-pbtext-500 sm:text-3xl">
+            Thanks for your purchase!
+          </p>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -144,7 +150,7 @@ export default function Checkout() {
         </>
       )}
 
-      {!shoppingCart?.cart && checkoutCart.status !== "success" && (
+      {!shoppingCart?.cart && (
         <p className="text-center text-pbtext-500">Your cart is empty.</p>
       )}
     </main>
