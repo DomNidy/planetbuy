@@ -157,7 +157,7 @@ export const userRouter = createTRPCRouter({
               snapshotBuyerName: buyer.name,
               sellerId: data.planet.ownerId ?? undefined,
               snapshotSellerName:
-                data.planet.ownerName ?? data.planet.ownerEmail ?? "unknown",
+                data.planet.ownerName ?? data.planet.ownerEmail ?? undefined,
               snapshotListPrice: data.listPrice,
               snapshotPlanetName: data.planet.name,
               planetId: data.planet.id,
@@ -334,6 +334,35 @@ export const userRouter = createTRPCRouter({
               snapshotListPrice: true,
             },
           },
+        },
+      });
+    }),
+
+  // Return list of all planettransactions from a specific transaction
+  getTransactionDetails: protectedProcedure
+    .input(z.object({ transactionId: z.string() }))
+    .query(async ({ input: { transactionId }, ctx }) => {
+      return await ctx.db.planetTransaction.findMany({
+        where: { transactionId, AND: { buyerId: ctx.session.user.id } },
+        select: {
+          planet: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          seller: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+
+          snapshotPlanetName: true,
+          snapshotSellerName: true,
+          snapshotListPrice: true,
+          startDate: true,
+          endDate: true,
         },
       });
     }),

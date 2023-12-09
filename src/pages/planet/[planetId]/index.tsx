@@ -16,6 +16,29 @@ export default function PlanetPage() {
     planetId: router.query.planetId as string,
   });
 
+  if (planetData.status === "loading") {
+    return (
+      <div className="flex min-h-screen w-full justify-center bg-pbdark-800 px-4  md:px-16 lg:px-44">
+        <div className="mt-36 flex  h-fit  w-fit  flex-col rounded-lg  p-4">
+          <div className="flex  flex-col gap-4  lg:flex-row">
+            <div
+              className=" relative mb-4 aspect-square h-[320px] w-[320px]  animate-pulse rounded-2xl bg-white/20
+   sm:h-[600px] sm:w-[600px]"
+            >
+              {" "}
+            </div>
+            <div className={`flex h-fit w-full md:min-w-[336px] flex-col gap-4 rounded-md`}>
+              <h1 className="h-[28px] animate-pulse rounded-lg bg-white/20 " />
+              <h1 className="h-[28px] animate-pulse rounded-lg bg-white/20 " />
+              <h1 className="h-[28px] animate-pulse rounded-lg bg-white/20 " />
+              <h1 className="h-[28px] animate-pulse rounded-lg bg-white/20 " />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!planetData.data) {
     return (
       <div className="flex min-h-screen w-full bg-pbdark-800">

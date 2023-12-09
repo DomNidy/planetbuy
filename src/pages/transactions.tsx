@@ -7,7 +7,7 @@ export default function Transactions() {
 
   return (
     <div className="flex min-h-screen w-full justify-center bg-pbdark-800 px-4 py-32 text-white ">
-      <DataTable data={transacitons.data ?? []} columns={columns}  />
+      <DataTable data={transacitons.data ?? []} columns={columns} />
     </div>
   );
 }

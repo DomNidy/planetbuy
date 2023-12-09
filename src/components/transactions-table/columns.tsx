@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+import { OpenInNewWindowIcon } from "@radix-ui/react-icons";
 import { type ColumnDef } from "@tanstack/react-table";
-import { type RouterOutputs } from "~/utils/api";
+import Link from "next/link";
+import { getBaseUrl, type RouterOutputs } from "~/utils/api";
 import { formatNumberToStringWithCommas } from "~/utils/utils";
 
 export const columns: ColumnDef<
@@ -8,12 +11,15 @@ export const columns: ColumnDef<
   {
     accessorKey: "id",
     header: "Transaction ID",
+    id: "transactionId",
   },
   {
+    // TODO: Add row sorting here
     accessorKey: "timestamp",
     header: "Date",
   },
   {
+    // TODO: Add row sorting here
     accessorKey: "purchasedItems",
     header: "Item(s) Purchased",
     cell: ({ row }) => (
@@ -21,6 +27,7 @@ export const columns: ColumnDef<
     ),
   },
   {
+    // TODO: Add row sorting here
     header: "Total",
     cell: ({ row }) => (
       <div>{`$${formatNumberToStringWithCommas(
@@ -28,5 +35,21 @@ export const columns: ColumnDef<
       )}`}</div>
     ),
     accessorKey: "transactionTotal",
+  },
+  {
+    header: "Details",
+    cell: ({ row }) => (
+      <div className="cursor-pointer">
+        <Link
+          target="_blank"
+          href={`${getBaseUrl()}/transaction/${row.getValue("transactionId")}`}
+        >
+          <OpenInNewWindowIcon
+            color="white"
+            className="h-4 w-4 rounded-md bg-opacity-30 transition-transform duration-75 hover:scale-125 "
+          />
+        </Link>
+      </div>
+    ),
   },
 ];

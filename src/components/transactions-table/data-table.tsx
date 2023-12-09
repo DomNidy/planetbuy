@@ -29,11 +29,11 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="rounded-md border max-w-[95%]">
+    <div className="max-w-[95%] rounded-md border">
       <Table>
-        <TableHeader className="bg-pbdark-850">
+        <TableHeader className="bg-pbdark-850 ">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="hover:bg-white/0">
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead
@@ -56,11 +56,12 @@ export function DataTable<TData, TValue>({
           {table.getCoreRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
+                className="hover:bg-muted/20"
                 key={row.id}
                 aria-selected={row.getIsSelected() && "true"}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell key={cell.id} className="hover:bg-none">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

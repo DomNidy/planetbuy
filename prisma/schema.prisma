@@ -89,10 +89,10 @@ model PlanetTransaction {
     // A "snapshot" of the planets' properties at the time of record creation
     // These are not directly relational and should be set manually
     snapshotPlanetName String
-    snapshotSellerName String @default("unknown")
+    snapshotSellerName String @default("Unknown Seller")
     // Snapshot of this planets listing price (when it was sold)
     snapshotListPrice  Float
-    snapshotBuyerName  String @default("unknown")
+    snapshotBuyerName  String @default("Unknown Buyer")
 
     @@index([planetId])
     @@index([transactionId, buyerId])
