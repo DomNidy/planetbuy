@@ -13,16 +13,57 @@ import { useSession } from "next-auth/react";
 import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 import EditListingForm from "~/components/EditListingForm";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
+import { CircleLoader } from "react-spinners";
+import { useToast } from "~/components/ui/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { getQueryKey } from "@trpc/react-query";
 
 export default function ListingPage() {
   const router = useRouter();
   const session = useSession();
   const shoppingCart = useContext(ShoppingCartContext);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   const listingData = api.planet.getPlanetDataFromListingId.useQuery({
     listingId: router.query.listingId as string,
+  });
+
+  const deleteListing = api.user.deletePlanetListing.useMutation({
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "An error occured while trying to delete this listing",
+        variant: "destructive",
+      });
+    },
+
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Listing deleted successfully",
+      });
+
+      void queryClient.refetchQueries({
+        queryKey: getQueryKey(api.planet.getPlanetListings),
+        type: "all",
+      });
+
+      void router.push("/");
+    },
   });
 
   // Whether or not this planet card is in an optimistic state (if it is showing optimistic data while an outbound request is processing)
@@ -53,7 +94,7 @@ export default function ListingPage() {
     );
   }
 
-  if (!listingData.data) {
+  if (!listingData.data?.id) {
     return (
       <div className="flex min-h-screen w-full bg-pbdark-800">
         Listing could not be found...
@@ -316,10 +357,7 @@ export default function ListingPage() {
               </>
             ) : (
               // If the user does own this listing, show the edit button
-              // TODO: Create an edit listing form and display it in a dialog
-              // TODO: This edit listing component should allow the user to send an edit listing request and
-              // TODO: display a loading spinner while the request is processing
-              <>
+              <div className="mt-2 flex flex-col gap-2">
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button
@@ -339,12 +377,51 @@ export default function ListingPage() {
                     />
                   </DialogContent>
                 </Dialog>
-              </>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button className="relative rounded-lg bg-red-400 text-pbdark-850  hover:bg-red-500 hover:bg-opacity-95 ">
+                      <p className="text-base">Delete Listing</p>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    {deleteListing.status === "loading" ? (
+                      <div className="flex justify-center">
+                        <CircleLoader />
+                      </div>
+                    ) : (
+                      <>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will remove your listing and you will have to
+                            re-list this planet to sell it.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-pbtext-500 font-semibold ">
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            className="font-semibold"
+                            onClick={() =>
+                              void deleteListing.mutate({
+                                listingId: listingData.data?.id ?? "",
+                              })
+                            }
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </>
+                    )}
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
           </div>
         </div>
         <div className="flex w-full flex-row justify-between">
-          <h1 className="text-[28px] font-semibold leading-6 tracking-tighter text-pbtext-500 ">
+          <h1 className="hidden text-[28px] font-semibold leading-6 tracking-tighter text-pbtext-500 sm:block ">
             {listingData.data.planet.name}
           </h1>
         </div>

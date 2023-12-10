@@ -27,7 +27,9 @@ export default function PlanetPage() {
             >
               {" "}
             </div>
-            <div className={`flex h-fit w-full md:min-w-[336px] flex-col gap-4 rounded-md`}>
+            <div
+              className={`flex h-fit w-full flex-col gap-4 rounded-md md:min-w-[336px]`}
+            >
               <h1 className="h-[28px] animate-pulse rounded-lg bg-white/20 " />
               <h1 className="h-[28px] animate-pulse rounded-lg bg-white/20 " />
               <h1 className="h-[28px] animate-pulse rounded-lg bg-white/20 " />
@@ -54,7 +56,7 @@ export default function PlanetPage() {
       <div className="mt-36 flex  h-fit  w-fit  flex-col rounded-lg  p-4">
         <div className="flex  flex-col gap-4  lg:flex-row">
           <div
-            className=" relative mb-4  aspect-square rounded-2xl bg-pbneutral-500
+            className=" relative mb-4  aspect-square  rounded-2xl bg-white/20
    md:h-[600px] md:w-[600px]"
           >
             {planetData?.data.planetImage && (

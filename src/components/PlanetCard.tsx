@@ -13,6 +13,7 @@ import {
   formatLargeNumberToString,
   formatNumberToStringWithCommas,
 } from "~/utils/utils";
+import { Dialog, DialogTrigger } from "./ui/dialog";
 
 export default function PlanetCard({
   planetData,
@@ -120,7 +121,7 @@ export default function PlanetCard({
               variant === "listing" &&
               planetData.planet.listing?.id && (
                 <Link
-                  className="hover:bg-pbtext-500 absolute right-1 top-1 cursor-pointer rounded-lg bg-pbdark-850 p-3 text-center  font-semibold text-pbtext-500 transition-all hover:text-pbdark-850"
+                  className="absolute right-1 top-1 cursor-pointer rounded-lg bg-pbdark-850 p-3 text-center font-semibold  text-pbtext-500 transition-all hover:bg-pbtext-500 hover:text-pbdark-850"
                   href={`${getBaseUrl()}/listing/${planetData.planet?.listing
                     ?.id}`}
                 >

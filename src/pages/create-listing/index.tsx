@@ -72,7 +72,6 @@ export default function CreateListing() {
                     />
                   </div>
 
-                  {/* TODO: STYLE THIS LINK*/}
                   <Link
                     className="h-fit w-fit rounded-lg bg-white p-2 text-center hover:bg-white/80"
                     href={`${getBaseUrl()}/create-listing/${planet.id}`}

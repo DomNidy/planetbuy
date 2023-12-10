@@ -441,7 +441,40 @@ export const userRouter = createTRPCRouter({
     }),
 
   // Delete a planet listing for a user (this user must own the planet the listing is asssociated with, and the user ids must match)
-  // * deletePlanetListing: protectedProcedure.mutation(async ({ctx, input}) => {})
+  deletePlanetListing: protectedProcedure
+    .input(z.object({ listingId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Lookup the listing via listingId and sure the owner is the same as the user who requested the endpoint
+        const listing = await ctx.db.listing.findUnique({
+          where: {
+            id: input.listingId,
+            AND: { planet: { ownerId: ctx.session.user.id } },
+          },
+        });
+
+        // If the listing id does not exist, or the user does not own the planet, throw an error
+        if (!listing) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            cause: "User does not own a planet with the requested planet id",
+            message: "This planet does not belong to you, or does not exist.",
+          });
+        }
+
+        // Delete the listing for the planet
+        await ctx.db.listing.delete({ where: { id: input.listingId } });
+      } catch (err) {
+        console.log(err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "An unknown error occured while trying to delete this listing, please try again.",
+        });
+      }
+
+      return "Successfully deleted listing";
+    }),
 
   addItemToCart: protectedProcedure
     .input(z.object({ listingId: z.string() }))

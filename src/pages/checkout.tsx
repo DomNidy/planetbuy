@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { TRPCClientError } from "@trpc/client";
+import { getQueryKey } from "@trpc/react-query";
 import { Check, ShoppingCart } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -23,10 +24,13 @@ export default function Checkout() {
         ["user", "getCartItems"],
         { type: "query" },
       ]);
-      void queryClient.refetchQueries([
-        ["user", "getBalance"],
-        { type: "query" },
-      ]);
+
+      void queryClient.refetchQueries({
+        queryKey: getQueryKey(api.user.getUsersPlanets),
+        type: "all",
+      });
+
+      void queryClient.refetchQueries([["user", "getBalance"]]);
     },
     onError(err) {
       if (err instanceof TRPCClientError) {

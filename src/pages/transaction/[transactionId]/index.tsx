@@ -44,7 +44,16 @@ export default function TransactionPage() {
   return (
     <div className="flex min-h-screen w-full flex-col items-center bg-pbdark-800 px-4 py-40 text-white ">
       <div className="flex flex-col">
-        <h1 className="text-start ml-2.5 text-xl font-bold">Transaction Details</h1>
+        <h1 className="ml-2 text-start text-xl font-bold">
+          Transaction Details:
+        </h1>
+
+        <div className="ml-2 mt-1 flex w-full flex-row justify-between gap-8 rounded-lg font-semibold sm:w-[400px]">
+          <div className="basis-24 ">Planet</div>
+          <div className="basis-24">Price</div>
+          <div className="basis-24">Seller</div>
+        </div>
+
         {transactionData.data?.map((transaction, idx) => (
           <div key={idx} className="flex flex-col p-2 ">
             <div className="flex w-full flex-row justify-between gap-8 rounded-lg border-2 p-2 sm:w-[400px]">
@@ -78,6 +87,26 @@ export default function TransactionPage() {
             </div>
           </div>
         ))}
+        <div className="ml-2 mt-1 flex w-full flex-col  rounded-lg font-semibold sm:w-[400px]">
+          <p>
+            Total:{" "}
+            <span className="font-normal">
+              $
+              {formatNumberToStringWithCommas(
+                transactionData.data.reduce(
+                  (acc, curr) => acc + curr.snapshotListPrice,
+                  0,
+                ),
+              )}
+            </span>
+          </p>
+          <p className="text-sm text-pbtext-800">
+            TxID:{" "}
+            <span className="overflow-hidden text-ellipsis  font-normal tracking-tight">
+              {transactionId}
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );
