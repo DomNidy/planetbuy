@@ -62,6 +62,7 @@ export default function TransactionPage() {
                   <Link
                     href={`/planet/${transaction.planet?.id}`}
                     className="underline underline-offset-4"
+                    target="_blank"
                   >
                     {transaction.planet?.name}
                   </Link>

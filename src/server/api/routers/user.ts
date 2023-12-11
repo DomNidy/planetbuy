@@ -297,8 +297,8 @@ export const userRouter = createTRPCRouter({
       };
     }),
 
-  // Return transaction history of the user who requested the endpoint (support pagination with this)
-  getTransactionHistory: protectedProcedure
+  // Return Transactions which the user created (purchase history)
+  getPurchaseTransactionHistory: protectedProcedure
     .input(
       z.object({
         limit: z.number().min(1, "Cannot fetch less than 1 item").optional(),
@@ -341,6 +341,50 @@ export const userRouter = createTRPCRouter({
       }
 
       return { transactions, nextCursor };
+    }),
+  // Return a list of planets sold by the user who requested the endpoint
+  getSellTransactionHistory: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1, "Cannot fetch less than 1 item").optional(),
+        cursor: z
+          .object({
+            transactionId: z.number(),
+          })
+          .nullish(),
+      }),
+    )
+    .query(async ({ ctx, input: { limit = 10, cursor } }) => {
+      const sellTransactions = await ctx.db.planetTransaction.findMany({
+        where: { sellerId: ctx.session.user.id },
+        take: limit,
+        cursor: cursor ? { id: cursor.transactionId } : undefined,
+        orderBy: { startDate: "desc" },
+        select: {
+          id: true,
+          planet: {
+            select: {
+              id: true,
+              name: true,
+              ownerId: true,
+            },
+          },
+
+          snapshotBuyerName: true,
+          snapshotListPrice: true,
+          snapshotPlanetName: true,
+          startDate: true,
+          endDate: true,
+        },
+      });
+
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (sellTransactions.length === limit) {
+        const nextTransaction = sellTransactions.pop();
+        nextCursor = { transactionId: nextTransaction!.id };
+      }
+
+      return { sellTransactions, nextCursor };
     }),
 
   // Return list of all planettransactions from a specific transaction

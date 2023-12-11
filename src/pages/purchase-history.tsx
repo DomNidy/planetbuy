@@ -1,11 +1,11 @@
-import { columns } from "~/components/transactions-table/columns";
-import { DataTable } from "~/components/transactions-table/data-table";
+import { columns } from "~/components/purchase-history-table/purchase-history-columns";
+import { DataTable } from "~/components/purchase-history-table/purchase-history-table";
 import { api } from "~/utils/api";
 
 export default function Transactions() {
-  const transactions = api.user.getTransactionHistory.useInfiniteQuery(
+  const transactions = api.user.getPurchaseTransactionHistory.useInfiniteQuery(
     {
-      limit: 13,
+      limit: 12,
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,

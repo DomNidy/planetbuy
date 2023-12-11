@@ -133,11 +133,20 @@ function AuthDisplay() {
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer p-0">
                 <Link
-                  href={`${getBaseUrl()}/transactions/`}
+                  href={`${getBaseUrl()}/purchase-history/`}
                   className="flex w-full items-center rounded-lg p-2"
                 >
                   <History className="mr-2 h-4 w-4" />
-                  <span>Transaction History</span>
+                  <span>Purchase History</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer p-0">
+                <Link
+                  href={`${getBaseUrl()}/sell-history/`}
+                  className="flex w-full items-center rounded-lg p-2"
+                >
+                  <History className="mr-2 h-4 w-4" />
+                  <span>Sell History</span>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

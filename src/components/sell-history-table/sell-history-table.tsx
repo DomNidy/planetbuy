@@ -5,6 +5,8 @@ import {
   useReactTable,
   getPaginationRowModel,
   type PaginationState,
+  type SortingState,
+  getSortedRowModel,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -22,7 +24,7 @@ import {
 } from "@tanstack/react-query";
 import { type RouterOutputs } from "~/utils/api";
 
-// TODO: We should adjust this interface to use generic type instead of hardcoding it with RouterOutputs["user"]["getTransactionHistory"]
+// TODO: We should adjust this interface to use generic type instead of hardcoding it with RouterOutputs["user"]["getPurchaseTransactionHistory"]
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -31,7 +33,7 @@ interface DataTableProps<TData, TValue> {
   ) =>
     | Promise<
         InfiniteQueryObserverResult<
-          RouterOutputs["user"]["getTransactionHistory"]
+          RouterOutputs["user"]["getSellTransactionHistory"]
         >
       >
     | undefined;
@@ -47,23 +49,28 @@ export function DataTable<TData, TValue>({
     pageSize: 10,
   });
 
+  // TODO: We can pass this state the the dataFetcherFn to fetch a dynamic amount of data
   const pagination = useMemo(
     () => ({ pageIndex, pageSize }),
     [pageIndex, pageSize],
   );
 
+  const [sorting, setSorting] = useState<SortingState>([]);
+
   const table = useReactTable({
     data: data ?? [],
     columns,
-    state: { pagination: { pageSize: pageSize, pageIndex: pageIndex } },
+    state: { pagination, sorting },
+    autoResetPageIndex: false,
     getCoreRowModel: getCoreRowModel(),
     onPaginationChange: setPagination,
     getPaginationRowModel: getPaginationRowModel(),
-    autoResetPageIndex: false,
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
-    <div className="max-w-[95%] rounded-md border">
+    <div className="rounded-md border">
       <Table>
         <TableHeader className="bg-pbdark-850 ">
           {table.getHeaderGroups().map((headerGroup) => (
