@@ -295,7 +295,8 @@ export default function ListingPage() {
                 <sup>2</sup> km
               </h2>
             </div>
-            {listingData.data.planet.owner?.id !== session.data?.user.id ? (
+            {listingData.data.planet.owner?.id !== session.data?.user.id ||
+            session.status !== "authenticated" ? (
               // If the user is not the owner of this listing, show the add to / remove from cart button
               <>
                 <div className="flex w-[17rem] flex-row justify-start gap-2  px-1 md:w-80"></div>
