@@ -310,17 +310,14 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input: { cursor, limit = 10 }, ctx }) => {
-      return await ctx.db.transaction.findMany({
+      const transactions = await ctx.db.transaction.findMany({
         where: { buyerId: ctx.session.user.id },
         take: limit,
         orderBy: { timestamp: "desc" },
         // Using a cursor over composite index
         cursor: cursor
           ? {
-              id_buyerId: {
-                id: ctx.session.user.id,
-                buyerId: cursor.transactionId,
-              },
+              id: cursor.transactionId,
             }
           : undefined,
         select: {
@@ -336,6 +333,14 @@ export const userRouter = createTRPCRouter({
           },
         },
       });
+
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (transactions.length === limit) {
+        const nextTransaction = transactions.pop();
+        nextCursor = { transactionId: nextTransaction!.id };
+      }
+
+      return { transactions, nextCursor };
     }),
 
   // Return list of all planettransactions from a specific transaction

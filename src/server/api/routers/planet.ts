@@ -304,6 +304,8 @@ export const planetRouter = createTRPCRouter({
         input: { meanPlanetStats, planetsToGenerate, stdDeviationPlanetStats },
         ctx,
       }) => {
+        // TODO: Refactor this to batch create planets, then batch create listings for those planets
+
         // Randomly generate planet data and create listings for them
         for (let i = 0; i < planetsToGenerate; i++) {
           // Generate random planet metadata

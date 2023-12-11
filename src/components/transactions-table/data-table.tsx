@@ -3,6 +3,8 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  getPaginationRowModel,
+  type PaginationState,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -12,20 +14,52 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { Button } from "../ui/button";
+import { useMemo, useState } from "react";
+import {
+  type FetchNextPageOptions,
+  type InfiniteQueryObserverResult,
+} from "@tanstack/react-query";
+import { type RouterOutputs } from "~/utils/api";
 
+// TODO: We should adjust this interface to use generic type instead of hardcoding it with RouterOutputs["user"]["getTransactionHistory"]
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  dataFetcherFn: (
+    options?: FetchNextPageOptions | undefined,
+  ) =>
+    | Promise<
+        InfiniteQueryObserverResult<
+          RouterOutputs["user"]["getTransactionHistory"]
+        >
+      >
+    | undefined;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  dataFetcherFn,
 }: DataTableProps<TData, TValue>) {
+  const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const pagination = useMemo(
+    () => ({ pageIndex, pageSize }),
+    [pageIndex, pageSize],
+  );
+
   const table = useReactTable({
-    data,
+    data: data ?? [],
     columns,
+    state: { pagination: { pageSize: pageSize, pageIndex: pageIndex } },
     getCoreRowModel: getCoreRowModel(),
+    onPaginationChange: setPagination,
+    getPaginationRowModel: getPaginationRowModel(),
+    autoResetPageIndex: false,
   });
 
   return (
@@ -76,6 +110,31 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
+      <div className="mr-2 flex items-center justify-end space-x-2 py-4">
+        <Button
+          variant={"foreground"}
+          size={"sm"}
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <p>
+          {pagination.pageIndex} / {table.getPageCount() - 1}
+        </p>
+        <Button
+          variant={"foreground"}
+          size={"sm"}
+          onClick={() => {
+            void dataFetcherFn();
+            console.log("Next");
+            table.nextPage();
+          }}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 }
