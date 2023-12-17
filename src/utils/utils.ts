@@ -8,10 +8,12 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { type planetImagePropertiesSchema } from "./schemas";
 import {
-  type PlanetQuality,
+  PlanetQuality,
   PlanetTemperatureRange,
   PlanetTerrain,
 } from "@prisma/client";
+import { db } from "~/server/db";
+import { env } from "~/env.mjs";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -161,6 +163,60 @@ export function isScrolledToBottom(threshold: number): boolean {
   } else {
     return false;
   }
+}
+
+/**
+ *
+ * @param threshold A number between 0 and 1 which determines the probability of a higher quality planet being chosen (higher threshold = lower probability of higher quality planet)
+ * @returns {any} A random PlanetQuality
+ */
+export function getRandomPlanetQuality(threshold: number): PlanetQuality {
+  const qualityArray = Object.values(PlanetQuality);
+  let qualityIdx = 0;
+
+  // Randomly generated numbers must be greater than threshold in order to increment planet quality
+  // Increasing threshold will decrease the probability of higher quality planets being chosen
+  while (Math.random() > threshold && qualityIdx < 4) {
+    qualityIdx += 1;
+  }
+
+  return qualityArray[qualityIdx]!;
+}
+
+export function getRandomPlanetTemperature(): PlanetTemperatureRange {
+  const temperatureArray = Object.values(PlanetTemperatureRange);
+  const randomIdx = Math.floor(Math.random() * temperatureArray.length);
+
+  return temperatureArray[randomIdx]!;
+}
+
+export function getRandomPlanetTerrain(): PlanetTerrain {
+  const terrainArray = Object.values(PlanetTerrain);
+  const randomIdx = Math.floor(Math.random() * terrainArray.length);
+
+  return terrainArray[randomIdx]!;
+}
+
+export function generateRandomPlanetListPrice(
+  quality: PlanetQuality,
+  meanListPrice: number,
+  stdDeviationListPrice: number,
+): number {
+  // Generate a random number with a normal distribution
+  const randomListPrice = generateRandomNumberWithStdDev(
+    meanListPrice,
+    stdDeviationListPrice,
+  );
+
+  // Clamp the random number between 0 and 1,000,000,000
+  const clampedRandomListPrice = clampNumber(
+    randomListPrice,
+    env.NEXT_PUBLIC_MIN_LISTING_PRICE,
+    env.NEXT_PUBLIC_MAX_LISTING_PRICE,
+  );
+
+  // Return the rounded number
+  return clampedRandomListPrice;
 }
 
 export function generateRandomPlanetName(): string {

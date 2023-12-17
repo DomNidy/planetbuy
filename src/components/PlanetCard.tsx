@@ -13,7 +13,6 @@ import {
   formatLargeNumberToString,
   formatNumberToStringWithCommas,
 } from "~/utils/utils";
-import { Dialog, DialogTrigger } from "./ui/dialog";
 
 export default function PlanetCard({
   planetData,
@@ -177,7 +176,10 @@ export default function PlanetCard({
         </h3>
         {variant === "listing" && (
           <h3 className="mt-0.5 text-[18px] font-bold tracking-tighter text-pbtext-500">
-            ${formatNumberToStringWithCommas(planetData.listPrice ?? 0)}
+            $
+            {formatNumberToStringWithCommas(
+              Math.round(planetData.listPrice ?? 0),
+            )}
           </h3>
         )}
       </Link>

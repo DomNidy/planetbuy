@@ -4,13 +4,21 @@ import { z } from "zod";
 import {
   clampNumber,
   generateRandomNumberWithStdDev,
+  generateRandomPlanetListPrice,
   generateRandomPlanetName,
+  getRandomPlanetQuality,
+  getRandomPlanetTemperature,
+  getRandomPlanetTerrain,
 } from "~/utils/utils";
 import {
+  Planet,
   PlanetQuality,
   PlanetTemperatureRange,
   PlanetTerrain,
 } from "@prisma/client";
+import { tr } from "date-fns/locale";
+import { c } from "vitest/dist/reporters-5f784f42";
+import { TRPCClientError } from "@trpc/client";
 
 export const planetRouter = createTRPCRouter({
   getAllPlanets: publicProcedure
@@ -304,87 +312,83 @@ export const planetRouter = createTRPCRouter({
         input: { meanPlanetStats, planetsToGenerate, stdDeviationPlanetStats },
         ctx,
       }) => {
-        // TODO: Refactor this to batch create planets, then batch create listings for those planets
+        const planets: Planet[] = [];
 
-        // Randomly generate planet data and create listings for them
-        for (let i = 0; i < planetsToGenerate; i++) {
-          // Generate random planet metadata
-          const temperatureArray = Object.values(PlanetTemperatureRange);
-          const temperature =
-            temperatureArray[
-              Math.floor(Math.random() * temperatureArray.length)
-            ]!;
-
-          const terrainArray = Object.values(PlanetTerrain);
-          const terrain =
-            terrainArray[Math.floor(Math.random() * terrainArray.length)]!;
-
-          // Randomly generated numbers must be greater than qualityProbability in order to increment planet quality
-          // Increasing qualityProbability will decrease the probability of higher quality planets being chosen
-          const qualityProbability = 0.7;
-          const qualityArray = Object.values(PlanetQuality);
-          let qualityIdx = 0;
-          while (Math.random() > qualityProbability && qualityIdx < 4) {
-            qualityIdx += 1;
-          }
-
-          const quality = qualityArray[qualityIdx]!;
-
-          // Find an image which matches the properties of the generated planet
-
-          const planetImage = await ctx.db.planetImage.findFirst({
-            where: {
-              // Find a planet image that matches the quality
-              // If generated planets quality is not phenomenal, look for a common quality image instead
-              quality: {
-                equals: quality === "PHENOMENAL" ? "PHENOMENAL" : "COMMON",
-              },
-              temperature: { equals: temperature },
-              terrain: { equals: terrain },
-            },
-            orderBy: { assosciatedPlanets: { _count: "asc" } },
-            select: { id: true },
-          });
-
-          console.log(planetImage, "im");
-
-          await ctx.db.planet.create({
-            data: {
-              name: generateRandomPlanetName(),
-              surfaceArea: clampNumber(
-                Math.round(
-                  generateRandomNumberWithStdDev(
-                    meanPlanetStats.surfaceAreaMean,
-                    stdDeviationPlanetStats.surfaceAreaStdDev,
-                  ),
+        const createPlanet = async () => {
+          try {
+            const temperature = getRandomPlanetTemperature();
+            const terrain = getRandomPlanetTerrain();
+            const quality = getRandomPlanetQuality(0.7);
+            const name = generateRandomPlanetName();
+            const surfaceArea = clampNumber(
+              Math.round(
+                generateRandomNumberWithStdDev(
+                  meanPlanetStats.surfaceAreaMean,
+                  stdDeviationPlanetStats.surfaceAreaStdDev,
                 ),
-                env.NEXT_PUBLIC_MIN_SURFACE_AREA,
-                env.NEXT_PUBLIC_MAX_SURFACE_AREA,
               ),
-              discoveryDate: new Date(),
-              quality: quality,
-              temperature: temperature,
-              terrain: terrain,
-              planetImage: { connect: { id: planetImage?.id } },
-              listing: {
-                create: {
-                  listPrice: clampNumber(
-                    Math.round(
-                      generateRandomNumberWithStdDev(
-                        meanPlanetStats.valueMean,
-                        stdDeviationPlanetStats.valueStdDev,
-                      ) *
-                        (qualityIdx + 1),
-                    ),
-                    env.NEXT_PUBLIC_MIN_LISTING_PRICE,
-                    env.NEXT_PUBLIC_MAX_LISTING_PRICE,
-                  ),
-                  listDate: new Date(),
+              env.NEXT_PUBLIC_MIN_SURFACE_AREA,
+              env.NEXT_PUBLIC_MAX_SURFACE_AREA,
+            );
+
+            const listPrice = Math.round(
+              generateRandomPlanetListPrice(
+                quality,
+                meanPlanetStats.valueMean,
+                stdDeviationPlanetStats.valueStdDev,
+              ),
+            );
+
+            // Get planet image with the correct temperature and terrain, and least amount of associated planets
+            // If generated planet's quality is not phenomenal, look for a common quality image instead
+            const planetImage = await ctx.db.planetImage.findFirst({
+              where: {
+                quality: {
+                  equals: quality === "PHENOMENAL" ? "PHENOMENAL" : "COMMON",
+                },
+                temperature: { equals: temperature },
+                terrain: { equals: terrain },
+              },
+              orderBy: { assosciatedPlanets: { _count: "asc" } },
+              select: { id: true },
+            });
+
+            // Create the planet
+            const createdPlanet = ctx.db.planet.create({
+              data: {
+                name: name,
+                surfaceArea: surfaceArea,
+                discoveryDate: new Date(),
+                quality: quality,
+                temperature: temperature,
+                terrain: terrain,
+                planetImage: { connect: { id: planetImage!.id } },
+                listing: {
+                  create: {
+                    listPrice: listPrice,
+                    listDate: new Date(),
+                  },
                 },
               },
-            },
-          });
-        }
+            });
+
+            return createdPlanet;
+          } catch (err) {
+            console.log(err);
+            throw err;
+          }
+        };
+
+        const createPlanets = Array.from(
+          { length: planetsToGenerate },
+          createPlanet,
+        );
+
+        await Promise.all(createPlanets).then((createdPlanets) => {
+          planets.push(...createdPlanets);
+        });
+
+        return planets;
       },
     ),
 });
